@@ -11,7 +11,6 @@ public class main {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		
-	// Hallo, 
 	// read in the data
 		
 	Scanner s;
