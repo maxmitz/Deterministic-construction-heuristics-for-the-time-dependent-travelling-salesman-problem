@@ -1,0 +1,2 @@
+module shortest_path {
+}

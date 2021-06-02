@@ -45,8 +45,11 @@ public class main {
 	int helper_start = 0;
 	int helper_middle = 0;
 	int depth = 0;
-	int[] way = new int[array_size];
-	double[] way_length = new double[array_size];
+	// for both next array_size
+	int[] way = new int[20];
+	double[] way_length = new double[20];
+	boolean duplicate;
+	boolean deeper;
 	
 	
 	for (int i = 0; i < matrix.length; i++) {
@@ -65,14 +68,35 @@ public class main {
 				while (helper_middle >= matrix.length && depth > 0) {
 					way[depth] = 0;
 					depth -= 1;
-					helper_start = way[depth - 1];
+					if(depth > 0) {
+						helper_start = way[depth - 1];
+					}
 					way[depth] += 1;
 					helper_middle = way[depth];
 				}
 				
-				//Does not check for equality in array so far
+				// Equality check
+				duplicate = false;
 				
-				if((matrix[helper_start][helper_middle] + way_length[depth] < compare) && (helper_start != helper_middle)) {
+				for (int k = 0; i <= depth; i++) {
+					if (helper_middle == way[k] || helper_start == way[k]) {
+						duplicate = true;
+					}
+				}
+				
+				if(depth >= 1) {
+					if((matrix[helper_start][helper_middle] + way_length[depth] < compare) && (helper_start != helper_middle) && !duplicate && way [depth] != way[depth -1]) {
+						deeper = true;
+					} else {
+						deeper = false;
+					}
+				} else if((matrix[helper_start][helper_middle] + way_length[depth] < compare) && (helper_start != helper_middle) && !duplicate) {
+					deeper = true;
+				} else {
+					deeper = false;
+				}
+				
+				if(deeper) {
 					
 					// Check for destination
 	                if (matrix[helper_start][helper_middle] + matrix[helper_middle][j] + way_length[depth] < compare) {
@@ -80,12 +104,13 @@ public class main {
 	                    //System.out.println(i+ j + "Found quicker: depth" + depth + "helper_i"+helper_start+ "helper_k "+ helper_middle + compare);
 	                }
 	                
+	                
+	                System.out.println("Get deeper: depth " +  depth +  " helper_i "  + helper_start + " helper_k " +  helper_middle + Arrays.toString(way));
 	                depth += 1;
 	                way_length[depth] = Math.round((way_length[depth - 1] + matrix[helper_start][helper_middle])* 100.0) / 100.0;
 	                way[depth] = helper_middle;
 	                helper_start = helper_middle;
 	                helper_middle = 0;           
-	                System.out.println("Get deeper: depth " +  depth +  " helper_i "  + helper_start + " helper_k " +  helper_middle + Arrays.toString(way));
 					
 					
 				}
@@ -119,6 +144,7 @@ public class main {
 		}
 	}
 	System.out.println(zeros);
+	System.out.println(Arrays.deepToString(matrix));
 	}
 }
 	
