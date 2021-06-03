@@ -10,7 +10,10 @@ import java.util.Scanner;
 public class main_shortest {
 	public static void main(String[] args) {
 		
-		// read file
+		// read file l
+		// lol 
+		int t = 0;
+		System.out.println("Test");
 		
 		Float[][] array = new Float[10][10];
 		try {
@@ -77,6 +80,8 @@ public class main_shortest {
 		while(!currentMap.isEmpty() && iteration < 5) {
 			HashSet<Tuple> nextMap = new HashSet<Tuple>();
 			
+			
+			// Find new Vertices from current
 			for(Tuple currentVertex : currentMap) {
 				if(array_random[currentVertex.x][currentVertex.y] != 0 ) {
 					
@@ -84,26 +89,42 @@ public class main_shortest {
 					for(int i = 0; i < array_random.length; i++) {
 						if(array_random[currentVertex.y][i] != 0 ) {
 							nextVertices.add(new Tuple(currentVertex.y,i));
+							System.out.println("Add nextVertices from " + currentVertex.x + " " + currentVertex.y  + " (" + currentVertex.y + " , " + i + ")");
 						}
 					}
 					
-					for(Tuple nextVertex : nextVertices) {
-						duplicate = false;
-						for(Tuple currentVer :currentMap) {
-							for(Tuple nextVer :nextMap) {
-								if (nextVertex == currentVer || nextVertex == nextVer) {
-									duplicate = true;
-								}
-							}
-							if(!duplicate) {
-								nextMap.add(nextVertex);
-							}
-						}
-						for(Tuple currentVer : currentMap) {
-							nextMap.add(currentVer);
-						}
-						
+					for(Tuple next : nextVertices) {
+						System.out.print("( " + next.x + " , " + next.y + " ) ");
 					}
+					System.out.println();
+					
+					
+					// add nextVertices to nextMap
+					for(Tuple nextVertex : nextVertices) {
+						for(Tuple currentVer :currentMap) {
+							if (!nextMap.isEmpty()) {
+								for(Tuple nextVer :nextMap) {
+									duplicate = false;
+									if (nextVertex == currentVer || nextVertex == nextVer) {
+										duplicate = true;
+									}
+									if(!duplicate) {
+										nextMap.add(nextVertex);
+										System.out.println("Add nextMap from nextVertex " + nextVertex.x + " " + nextVertex.y );
+									}
+								}
+							} else {
+								nextMap.add(nextVertex);
+								System.out.println("Add nextMap from nextVertex " + nextVertex.x + " " + nextVertex.y );
+							}
+						}
+					}
+					for(Tuple currentVer : currentMap) {
+							nextMap.add(currentVer);
+							System.out.println("Add nextMap from currentMap " + currentVertex.x + " " + currentVertex.y );
+
+					}
+						
 					
 				}
 			}
