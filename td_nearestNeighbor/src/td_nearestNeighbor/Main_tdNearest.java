@@ -82,7 +82,7 @@ public class Main_tdNearest {
 		tspPath[0] = cities[0];
 		tspPath[tspPath.length - 1] = cities[0];
 		int step = 1;
-		int neighborTime = 99999;
+		int neighborTime;
 		boolean duplicate;
 		
 		
@@ -104,7 +104,7 @@ public class Main_tdNearest {
 							duplicate = true;
 						}
 					}
-					if (distanceFct[i][j][currentTimestep] < neighborTime && !duplicate) {
+					if (distanceFct[i][cities[j]][currentTimestep] < neighborTime && !duplicate) {
 						tspPath[step] = cities[j];
 					}
 				}
@@ -121,7 +121,104 @@ public class Main_tdNearest {
 		
 		// Nearest insertion algorithm
 		
-		System.out.println("\n\nNearest insertion algorithm");
+		System.out.println("\n\nNearest insertion algorithm");	
+		Arrays.fill(tspPath, -1);
+		int compare = 99999;
+		totalDuration = 0;
+		currentTimestep = 0;
+		// find first insertion
+		
+		for(i = 0; i < cities.length; i++) {
+			for(int j = 0; j < cities.length; j++) {
+				if(i != j) {
+					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(distanceFct[cities[i]][cities[j]][currentTimestep]/duration)] < compare) {
+						tspPath[0] = cities[i];
+						tspPath[1] = cities[j];
+						tspPath[2] = cities[i];
+						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][distanceFct[cities[i]][cities[j]][currentTimestep]/duration];
+					}
+				}
+			}
+		}
+		totalDuration = compare;
+		step = 2;
+		System.out.println(Arrays.toString(tspPath) + " , " + compare);
+		
+		// flexible duration calculation
+		int pathDuration = 0;
+		
+		for(i = 0; i < step;i++) {
+			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][pathDuration/duration];
+		}
+		
+		// try second insertion
+		
+		int[] testPath = new int[tspPath.length];
+		int[] bestPath = new int[tspPath.length];
+		Arrays.fill(testPath, -1);
+		Arrays.fill(bestPath, -1);
+		int bestDuration = 0;
+		
+		while(step < tspPath.length) {
+			System.out.println(step +1  + " insertion");
+			for(i = 0; i <= step; i++) {
+				compare = 99999;
+				for(int j = 0; j < cities.length; j++) {
+					for(int k = 0; k <= step; k++) {
+						testPath[k] = tspPath[k];
+					}
+					// Check for duplicate
+					
+					duplicate = false;
+					
+					for(int n = 0; n <= step; n++) {
+						if(cities[j] == testPath[n]) {
+							duplicate = true;
+						}
+					}
+					
+					// !!! Do i miss one permutation? two positions for 0 ..
+					if(!duplicate){
+						if(i == 0) {
+							// insert at start and step + 1 and see if it is shorter than compare
+							testPath[0] = cities[j];
+							testPath[step+1] = cities[j];
+						} else {
+							// insert i at that place and check if it shorter than compare
+							for(int l = i; l <= step; l++) {
+								testPath[l+1] = testPath[l];
+							}
+							testPath[i] = cities[j];
+							testPath[step+1] = testPath[0];
+						}
+						pathDuration = 0;
+						for(int m = 0; m < step;m++) {
+							pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/duration];
+						}
+						if(pathDuration < compare) {
+							compare = pathDuration;
+							bestDuration = pathDuration;
+							for(int k = 0; k <= step + 1; k++) {
+								bestPath[k] = testPath[k];
+							}
+							System.out.println(Arrays.toString(bestPath) + " , " + bestDuration + ", duplicate: " + duplicate);
+
+						}	
+					}
+				}
+				
+			}
+			for (int o = 0; o < tspPath.length;o++) {
+				tspPath[o] = bestPath[o];
+			}
+			pathDuration = 0;
+			for(int m = 0; m < step;m++) {
+				pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][pathDuration/duration];
+			}
+			
+			System.out.println("Best Path: " + Arrays.toString(bestPath) + " , " + bestDuration);
+			step++;
+		}
 		
 	}
 }

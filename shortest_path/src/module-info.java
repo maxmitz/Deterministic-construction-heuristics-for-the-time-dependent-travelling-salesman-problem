@@ -1,2 +1,0 @@
-module shortest_path {
-}
