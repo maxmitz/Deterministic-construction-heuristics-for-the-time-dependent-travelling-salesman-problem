@@ -43,7 +43,7 @@ public class Main_tdNearest {
 			e.printStackTrace();
 		}
 		
-		// General TD-TSP -
+		// General TD-TSP - - 
 		
 		int[] cities = {5,6,7,8,23,34,45,56};
 		int[] citiesHelp = new int[cities.length];
@@ -184,8 +184,7 @@ public class Main_tdNearest {
 							testPath[0] = cities[j];
 							testPath[step+1] = cities[j];
 						} else {
-							// insert i at that place and check if it shorter than compare
-							for(int l = i; l <= step; l++) {
+							for(int l = step; l >= i; l--) {
 								testPath[l+1] = testPath[l];
 							}
 							testPath[i] = cities[j];
