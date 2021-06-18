@@ -43,7 +43,7 @@ public class Main_tdNearest {
 			e.printStackTrace();
 		}
 		
-		// General TD-TSP - - 
+		// General TD-TSP
 		
 		int[] cities = {5,6,7,8,23,34,45,56};
 		int[] citiesHelp = new int[cities.length];
