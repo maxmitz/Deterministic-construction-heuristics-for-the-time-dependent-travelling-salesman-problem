@@ -9,31 +9,33 @@ import java.util.Scanner;
 public class Main_tdNearest {
 	public static void main(String[]args) {
 		
-		
-		// Data reading
-		String name = "0609_shortestpath_15_91.txt";
-		// Has to be changed each time
-		int nbLocations = 91;
-		int nbTimesteps = -1;
-		int duration = 0;
+		// Data reading general
+		int nbLocations = 0;
+		int nbTimesteps = 0;
+		int durationTimestep = 0;
 		int[][][] distanceFct = null;
+		String fileName;
 		Scanner file;
+		
+		// Data read own + Melgarejo
+		//fileName = "0609_shortestpath_15_91.txt";
+		fileName = "matrix00.txt";
+		
 		try {
-			file = new Scanner(new File(name));
+			file = new Scanner(new File(fileName));
 			file.useLocale(Locale.US);
-			file.nextInt();
-			file.nextInt();			
+			nbLocations = file.nextInt();		
 			nbTimesteps = file.nextInt();
-			duration = file.nextInt();
-			
+			durationTimestep = file.nextInt();
 			distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
 			
 			for(int s=0;s<nbTimesteps;s++) {
 				for(int i=0;i<nbLocations;i++) {
 					for(int j=0;j<nbLocations;j++) {
 						distanceFct[i][j][s]=file.nextInt();
+						//System.out.println(distanceFct[i][j][s] + " , ");
 						if (distanceFct[i][j][s] == 0) {
-							distanceFct[i][j][s] = 9999;
+							//distanceFct[i][j][s] = 9999;
 						}
 					}
 				}
@@ -43,8 +45,13 @@ public class Main_tdNearest {
 			e.printStackTrace();
 		}
 		
-		// General TD-TSP
+		System.out.println(distanceFct[0][0][0]);
+		System.out.println(distanceFct[0][0][1]);
+		System.out.println(distanceFct[0][1][0]);
+		System.out.println(distanceFct[1][0][0]);
+		System.out.println(distanceFct[254][254][129]);
 		
+		// General TD-TSP
 		int[] cities = {5,6,7,8,23,34,45,56};
 		int[] citiesHelp = new int[cities.length];
 		int[] tspPath = new int[cities.length + 1];
@@ -57,10 +64,10 @@ public class Main_tdNearest {
 			totalDuration = 0;
 			for( int k = 0; k < cities.length -1; k++) {
 				System.out.print(cities[k] + " - ");
-				currentTimestep = totalDuration / duration;
+				currentTimestep = totalDuration / durationTimestep;
 				totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
 			}
-			currentTimestep = totalDuration / duration;
+			currentTimestep = totalDuration / durationTimestep;
 			totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
 			System.out.println(cities[cities.length-1] + " - " + cities[0] + ", total duration: " + totalDuration);
 			
@@ -96,7 +103,7 @@ public class Main_tdNearest {
 			
 			while (step < cities.length) {
 				neighborTime = 99999;
-				currentTimestep = totalDuration / duration;
+				currentTimestep = totalDuration / durationTimestep;
 				for (int j = 0; j < cities.length; j++ ) {
 					duplicate = false;
 					for (int k = 0; k < tspPath.length; k++) {
@@ -131,11 +138,11 @@ public class Main_tdNearest {
 		for(i = 0; i < cities.length; i++) {
 			for(int j = 0; j < cities.length; j++) {
 				if(i != j) {
-					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(distanceFct[cities[i]][cities[j]][currentTimestep]/duration)] < compare) {
+					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)] < compare) {
 						tspPath[0] = cities[i];
 						tspPath[1] = cities[j];
 						tspPath[2] = cities[i];
-						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][distanceFct[cities[i]][cities[j]][currentTimestep]/duration];
+						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep];
 					}
 				}
 			}
@@ -148,7 +155,7 @@ public class Main_tdNearest {
 		int pathDuration = 0;
 		
 		for(i = 0; i < step;i++) {
-			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][pathDuration/duration];
+			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][pathDuration/durationTimestep];
 		}
 		
 		// try second insertion
@@ -192,7 +199,7 @@ public class Main_tdNearest {
 						}
 						pathDuration = 0;
 						for(int m = 0; m < step;m++) {
-							pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/duration];
+							pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/durationTimestep];
 						}
 						if(pathDuration < compare) {
 							compare = pathDuration;
@@ -212,7 +219,7 @@ public class Main_tdNearest {
 			}
 			pathDuration = 0;
 			for(int m = 0; m < step;m++) {
-				pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][pathDuration/duration];
+				pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][pathDuration/durationTimestep];
 			}
 			
 			System.out.println("Best Path: " + Arrays.toString(bestPath) + " , " + bestDuration);
