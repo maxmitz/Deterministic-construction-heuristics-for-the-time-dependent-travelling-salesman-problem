@@ -18,9 +18,44 @@ public class Main_tdNearest {
 		Scanner file;
 		
 		// Data read own + Melgarejo
+		int missing = 0;
 		//fileName = "0609_shortestpath_15_91.txt";
 		fileName = "matrix00.txt";
 		
+		try {
+			file = new Scanner(new File(fileName));
+			file.useLocale(Locale.US);
+			nbLocations = file.nextInt();		
+			nbTimesteps = file.nextInt();
+			durationTimestep = file.nextInt();
+			distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
+			
+			
+			for(int i=0;i<nbLocations;i++) {
+				for(int j=0;j<nbLocations;j++) {
+					for(int s=0;s<nbTimesteps;s++) {
+						try {
+							distanceFct[i][j][s]=file.nextInt();
+							while(distanceFct[i][j][s] == 0){
+								distanceFct[i][j][s]=file.nextInt();
+							}
+						} catch(Exception e) {
+							missing ++;
+						}
+						
+						/*
+						if (distanceFct[i][j][s] == 0) {
+							distanceFct[i][j][s] = 9999;
+						}*/
+					}
+				}
+			}
+			file.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Missing values: " + missing);
+		/*
 		try {
 			file = new Scanner(new File(fileName));
 			file.useLocale(Locale.US);
@@ -33,10 +68,13 @@ public class Main_tdNearest {
 				for(int i=0;i<nbLocations;i++) {
 					for(int j=0;j<nbLocations;j++) {
 						distanceFct[i][j][s]=file.nextInt();
-						//System.out.println(distanceFct[i][j][s] + " , ");
-						if (distanceFct[i][j][s] == 0) {
-							//distanceFct[i][j][s] = 9999;
+						
+						while(distanceFct[i][j][s] == 0){
+							distanceFct[i][j][s]=file.nextInt();
 						}
+						if (distanceFct[i][j][s] == 0) {
+							distanceFct[i][j][s] = 9999;
+
 					}
 				}
 			}
@@ -44,15 +82,16 @@ public class Main_tdNearest {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		
+		*/
 		System.out.println(distanceFct[0][0][0]);
 		System.out.println(distanceFct[0][0][1]);
+		System.out.println(distanceFct[0][2][0]);
 		System.out.println(distanceFct[0][1][0]);
 		System.out.println(distanceFct[1][0][0]);
 		System.out.println(distanceFct[254][254][129]);
 		
 		// General TD-TSP
-		int[] cities = {5,6,7,8,23,34,45,56};
+		int[] cities = {5,6,7,8,23,34,45,56,88};
 		int[] citiesHelp = new int[cities.length];
 		int[] tspPath = new int[cities.length + 1];
 		int currentTimestep = 0;
@@ -127,14 +166,13 @@ public class Main_tdNearest {
 		}
 		
 		// Nearest insertion algorithm
-		
 		System.out.println("\n\nNearest insertion algorithm");	
 		Arrays.fill(tspPath, -1);
 		int compare = 99999;
 		totalDuration = 0;
 		currentTimestep = 0;
 		// find first insertion
-		
+		/*
 		for(i = 0; i < cities.length; i++) {
 			for(int j = 0; j < cities.length; j++) {
 				if(i != j) {
@@ -207,7 +245,7 @@ public class Main_tdNearest {
 							for(int k = 0; k <= step + 1; k++) {
 								bestPath[k] = testPath[k];
 							}
-							System.out.println(Arrays.toString(bestPath) + " , " + bestDuration + ", duplicate: " + duplicate);
+							//System.out.println(Arrays.toString(bestPath) + " , " + bestDuration + ", duplicate: " + duplicate);
 
 						}	
 					}
@@ -225,6 +263,92 @@ public class Main_tdNearest {
 			System.out.println("Best Path: " + Arrays.toString(bestPath) + " , " + bestDuration);
 			step++;
 		}
+		*/
 		
+		// Christofides' algorithm
+		System.out.println("\n\nChristofides' algorithm");	
+		Arrays.fill(tspPath, -1);
+		currentTimestep = 0;
+		
+		// Start minimum-cost arborescence
+		step = 1;
+		int[] predecessor = new int[cities.length];
+		int[] treeElements = new int[cities.length];
+		int[] timeTree = new int[cities.length];
+		int[] matchingTreeElements;
+		int[] matchingPredecessor;
+		
+		
+		// change to < cities.length
+		for(int l = 0; l < 1; l++) {
+			
+			System.out.println("Minimum-cost arborescence");
+			Arrays.fill(predecessor, -1);
+			Arrays.fill(treeElements, -1);
+			treeElements[0] = cities[l];
+			Arrays.fill(timeTree, 0);
+			
+			for(step = 1; step < treeElements.length; step++) {
+				compare = 99999;
+				for(i = 0; i < step; i++) {
+					currentTimestep = timeTree[i] / durationTimestep;
+					for(int j = 0; j < cities.length; j++) {
+						
+						duplicate = false;
+						for (int k = 0; k < step; k++) {
+							if(treeElements[k] == cities[j]) {
+								duplicate = true;
+							}
+						}
+						if (distanceFct[treeElements[i]][cities[j]][currentTimestep] < compare && !duplicate) {
+							compare = distanceFct[treeElements[i]][cities[j]][currentTimestep];
+							treeElements[step] = cities[j];
+							predecessor[step] = treeElements[i];
+							timeTree[step] = distanceFct[treeElements[i]][cities[j]][currentTimestep] + timeTree[i];						
+						}
+					}
+				}
+				totalDuration = 0;
+				for (int k = 1; k <= step;k++) {
+					totalDuration += distanceFct[predecessor[k]][treeElements[k]][currentTimestep];
+				}
+			}
+			
+			System.out.println(Arrays.toString(treeElements) + " , total Duration: " + totalDuration);
+			System.out.println(Arrays.toString(predecessor));
+			//System.out.println(Arrays.toString(timeTree));
+			
+			
+			// Add Edges for nbInEdges != nbOutEdges
+			System.out.println("Find matching");
+			
+			int nbAdditionalEdges = 1;
+			
+			for(int k = 0; k < cities.length; k++) {
+				int helpCounter = 0;
+				for(int m = 0; m < treeElements.length; m++) {
+					if (cities[k] == predecessor[m]) {
+						helpCounter++;
+					}
+				}
+				if(helpCounter > 1) {
+					nbAdditionalEdges += helpCounter - 1;
+				}
+			}
+			System.out.println("Needed additional edges: " + nbAdditionalEdges);
+			
+			matchingTreeElements = new int[cities.length + nbAdditionalEdges];
+			Arrays.fill(matchingTreeElements, -1);
+			matchingPredecessor = new int[cities.length + nbAdditionalEdges];
+			Arrays.fill(matchingPredecessor, -1);
+			for(int k = 0; k < cities.length; k++) {
+				matchingTreeElements[k] = treeElements[k];
+				matchingPredecessor[k] = predecessor[k];
+			}
+			System.out.println(Arrays.toString(matchingTreeElements));
+			System.out.println(Arrays.toString(matchingPredecessor));
+			
+			
+		}
 	}
 }
