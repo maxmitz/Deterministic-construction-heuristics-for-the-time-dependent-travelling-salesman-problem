@@ -2,7 +2,9 @@ package td_nearestNeighbor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -17,10 +19,73 @@ public class Main_tdNearest {
 		String fileName;
 		Scanner file;
 		
-		// Data read own + Melgarejo
-		int missing = 0;
+		
+		/*
+		// Cordeau
+		fileName = "Cordeau_40ANodi_10.txt";
+		double[][] distanceFct_Cordeau;
+		double[][] speed = new double[3][3];
+		nbLocations = 42;
+		nbTimesteps = 1;
+		durationTimestep = 999999999;
+		try {
+			file = new Scanner(new File(fileName));
+			file.useLocale(Locale.US);
+			file.skip("N:");
+			file.nextInt();
+			file.next();file.next();file.next();
+			distanceFct_Cordeau = new double[nbLocations][nbLocations];
+			distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
+			
+			for(int i=0;i<nbLocations;i++) {
+				for(int j=0;j<nbLocations;j++) {
+						distanceFct_Cordeau[i][j]=file.nextDouble();
+				}
+			}
+			
+			for (int i=0;i< 8; i++) {
+				file.nextLine();
+			}
+			
+			for(int t = 0;t<3;t++) {
+				for(int j = 0;j<3;j++) {
+					speed[t][j] = file.nextDouble();
+				}
+			}
+			for (int i=0;i< 9; i++) {
+				file.nextLine();
+			}
+			
+			int[] zone = new int[nbLocations];
+			file.nextInt();
+			zone[0] = file.nextInt();
+			
+			for(int i=0;i<nbLocations-1;i++) {
+				zone[i+1] = file.nextInt();
+				file.nextLine();
+			}
+			System.out.println(Arrays.toString(zone));
+
+			file.close();
+			
+			for(int i = 0;i<nbLocations;i++) {
+				for(int j = 0;j<nbLocations;j++) {
+					for(int t = 0;t<nbTimesteps;t++) {
+						distanceFct[i][j][t] = (int) Math.round(60 * distanceFct_Cordeau[i][j] / speed[t][zone[i]-1]);
+						//System.out.println("i: "+ i + " j: " + j + " distance: " + distanceFct[i][j][t] + " disCor: " + distanceFct_Cordeau[i][j] + " speed: " + speed[t][zone[i]-1] );
+					}
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		*/
+		
+		// Melgarejo + from
 		//fileName = "0609_shortestpath_15_91.txt";
 		fileName = "matrix00.txt";
+		fileName = "inst-61-6-8-D100_fromF.txt";
 		
 		try {
 			file = new Scanner(new File(fileName));
@@ -34,19 +99,8 @@ public class Main_tdNearest {
 			for(int i=0;i<nbLocations;i++) {
 				for(int j=0;j<nbLocations;j++) {
 					for(int s=0;s<nbTimesteps;s++) {
-						try {
-							distanceFct[i][j][s]=file.nextInt();
-							while(distanceFct[i][j][s] == 0){
-								distanceFct[i][j][s]=file.nextInt();
-							}
-						} catch(Exception e) {
-							missing ++;
-						}
-						
-						/*
-						if (distanceFct[i][j][s] == 0) {
-							distanceFct[i][j][s] = 9999;
-						}*/
+						distanceFct[i][j][s]=file.nextInt();
+
 					}
 				}
 			}
@@ -54,8 +108,9 @@ public class Main_tdNearest {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Missing values: " + missing);
+		
 		/*
+		// Data read own
 		try {
 			file = new Scanner(new File(fileName));
 			file.useLocale(Locale.US);
@@ -83,15 +138,10 @@ public class Main_tdNearest {
 			e.printStackTrace();
 		}
 		*/
-		System.out.println(distanceFct[0][0][0]);
-		System.out.println(distanceFct[0][0][1]);
-		System.out.println(distanceFct[0][2][0]);
-		System.out.println(distanceFct[0][1][0]);
-		System.out.println(distanceFct[1][0][0]);
-		System.out.println(distanceFct[254][254][129]);
+		//System.out.println(distanceFct[0][0][0]);
 		
 		// General TD-TSP
-		int[] cities = {5,6,7,8,23,34,45,56,88};
+		int[] cities = {5,6,8,23,34};
 		int[] citiesHelp = new int[cities.length];
 		int[] tspPath = new int[cities.length + 1];
 		int currentTimestep = 0;
@@ -172,7 +222,7 @@ public class Main_tdNearest {
 		totalDuration = 0;
 		currentTimestep = 0;
 		// find first insertion
-		/*
+
 		for(i = 0; i < cities.length; i++) {
 			for(int j = 0; j < cities.length; j++) {
 				if(i != j) {
@@ -263,7 +313,7 @@ public class Main_tdNearest {
 			System.out.println("Best Path: " + Arrays.toString(bestPath) + " , " + bestDuration);
 			step++;
 		}
-		*/
+
 		
 		// Christofides' algorithm
 		System.out.println("\n\nChristofides' algorithm");	
@@ -347,6 +397,18 @@ public class Main_tdNearest {
 			}
 			System.out.println(Arrays.toString(matchingTreeElements));
 			System.out.println(Arrays.toString(matchingPredecessor));
+			
+			
+			// Start with own Christofides class
+			
+			List<ChristofidesElement> chris = new ArrayList<ChristofidesElement>(); 
+			for(int m =0; m<cities.length;m++) {
+				chris.add(new ChristofidesElement(treeElements[m],predecessor[m],timeTree[m]));
+				chris.get(m).getInAndOutEdges(matchingTreeElements, matchingPredecessor);
+				System.out.println(chris.get(m).printElement());
+			}
+			
+			// if in != out => Add closest edge
 			
 			
 		}
