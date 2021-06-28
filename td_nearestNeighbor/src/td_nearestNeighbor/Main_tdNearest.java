@@ -145,10 +145,10 @@ public class Main_tdNearest {
 		
 		// General TD-TSP
 		int[] cities = {5,6,8,23,34,51};
-		cities = new int[nbLocations];
-		for(int i=0;i<nbLocations;i++) {
-			cities[i] = i;
-		}
+		//cities = new int[nbLocations];
+		//for(int i=0;i<nbLocations;i++) {
+		//	cities[i] = i;
+		//}
 		
 		int[] citiesHelp = new int[cities.length];
 		int[] tspPath = new int[cities.length + 1];
@@ -447,7 +447,7 @@ public class Main_tdNearest {
 			for(int i=0; i<cities.length;i++) {
 				compare = 999999;
 				if(chris.get(i).nbInEdges > chris.get(i).nbOutEdges) {
-					// Look for quickest possible edge that is needed
+					// Look for quickest possible edge that is needed only one direction
 					
 					for(int j= 0;j<cities.length;j++) {
 						if(chris.get(j).nbInEdges < chris.get(j).nbOutEdges && i!=j) {
@@ -465,19 +465,36 @@ public class Main_tdNearest {
 					for(int m =0; m<cities.length;m++) {
 						chris.get(m).getInAndOutEdges(matchingTreeElements, matchingPredecessor);
 					}	
-				// do i need this???
-				} else if ( chris.get(i).nbInEdges < chris.get(i).nbOutEdges) {
-					
 				}
 			}
 			//System.out.println("\n");
-			//System.out.println(Arrays.toString(matchingTreeElements));
-			//System.out.println(Arrays.toString(matchingPredecessor));
+			System.out.println(Arrays.toString(matchingTreeElements));
+			System.out.println(Arrays.toString(matchingPredecessor));
 			
 			for(ChristofidesElement element : chris) {
 				element.getInAndOutEdges(matchingTreeElements, matchingPredecessor);
-				//System.out.println(chris.get(m).printElement());
+				System.out.println(element.printElement());
 			}
+			
+			// Detect cycles
+			
+	        Graph graph = new Graph(nbLocations);
+	        for(int i = 1; i<matchingTreeElements.length;i++) {
+	        	graph.addEdge(matchingPredecessor[i], matchingTreeElements[i]);
+	        }
+	        
+	        for(int i=0;i<graph.nbVertices;i++) {
+	            for(Integer item:graph.adj.get(i)){
+	                System.out.println("From " + i + " to " + item);
+	            }
+	        }
+	    	
+	        if(graph.containsTwoCycles())
+	            System.out.println("Graph contains at least 2 cycles");
+	        else
+	            System.out.println("Graph doesn't contain 2 or more cycles");
+			
+			// If there are 2 or more cycles remove one
 		}
 	}
 	
@@ -488,7 +505,6 @@ public class Main_tdNearest {
 			writer.flush();
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
