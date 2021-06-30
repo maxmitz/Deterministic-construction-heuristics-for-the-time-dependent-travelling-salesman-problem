@@ -34,6 +34,8 @@ public class Main_tdNearest {
 		  }
 		}
 		for (String name :stringListOfFiles) {
+			if (name != "15CNodi_7") {
+			System.out.println("\n"+name);
 			//fileName = "Cordeau_40ANodi_10.txt";
 			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\15\\15ANodi_1";
 			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\15\\"+name;
@@ -47,9 +49,7 @@ public class Main_tdNearest {
 				file.useLocale(Locale.US);
 				file.skip("N:");
 				nbLocations = file.nextInt()+2;
-				System.out.println(file.next());
-				System.out.println(file.next());
-				System.out.println(file.next());
+				file.next();file.next();file.next();
 				distanceFct_Cordeau = new double[nbLocations][nbLocations];
 				distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
 				
@@ -60,7 +60,7 @@ public class Main_tdNearest {
 				}
 				
 				for (int i=0;i< 3; i++) {
-					System.out.println(file.nextLine());
+					file.nextLine();
 				}
 				
 				file.nextDouble();
@@ -68,7 +68,7 @@ public class Main_tdNearest {
 				durationTimestep = (int) file.nextDouble() *60*2;
 				
 				for (int i=0;i< 5; i++) {
-					System.out.println(file.nextLine());
+					file.nextLine();
 				}
 				
 				for(int t = 0;t<3;t++) {
@@ -95,7 +95,7 @@ public class Main_tdNearest {
 				for(int i = 0;i<nbLocations;i++) {
 					for(int j = 0;j<nbLocations;j++) {
 						for(int t = 0;t<nbTimesteps;t++) {
-							distanceFct[i][j][t] = (int) Math.round(60 * distanceFct_Cordeau[i][j] / speed[t][zone[i]-1]);
+							distanceFct[i][j][t] = (int) Math.round(distanceFct_Cordeau[i][j] / speed[t][zone[i]-1]);
 							//System.out.println("i: "+ i + " j: " + j + " distance: " + distanceFct[i][j][t] + " disCor: " + distanceFct_Cordeau[i][j] + " speed: " + speed[t][zone[i]-1] );
 						}
 					}
@@ -367,7 +367,7 @@ public class Main_tdNearest {
 			}
 			System.out.println(Arrays.toString(bestPath) + " , " + bestDuration);
 			saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,bestPath);
-			/*
+			
 			
 			// Christofides' algorithm
 			System.out.println("\n\nChristofides' algorithm");	
@@ -517,7 +517,6 @@ public class Main_tdNearest {
 		            int[][] cycles = graph.containsTwoCycles();
 		            
 		            // Check if there are duplicate vertices in the cycles
-		            int counter = 0;
 		            int duplicateVertice =-1;
 		            int inDuplicate1 = -1;
 		            int outDuplicate2 = -1;
@@ -576,7 +575,8 @@ public class Main_tdNearest {
 		        
 
 			}
-				        */
+				        
+		}
 		}
 		
 	}
