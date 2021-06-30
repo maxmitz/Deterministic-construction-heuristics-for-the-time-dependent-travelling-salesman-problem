@@ -1,4 +1,4 @@
-package td_nearestNeighbor;
+package tdConstruction;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -6,31 +6,47 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class Main_tdNearest {
+public class Main_Construction {
+	// Data reading general
+	static int nbLocations = 0;
+	static int nbTimesteps = 0;
+	static int durationTimestep = 0;
+	static double[][][] distanceFct = null;
+	static String fileName;
+	Scanner file;
+	
+	static int[] cities;
+	
+	static int[] citiesHelp;
+	static int[] tspPath;
+	static int currentTimestep = 0;
+	static double totalDuration = 0;
+	static double bestResult = 999999;
+	static int[] bestResultPath;
+	
+	
 	public static void main(String[]args) {
 		
-		// Data reading general
-		int nbLocations = 0;
-		int nbTimesteps = 0;
-		int durationTimestep = 0;
-		int[][][] distanceFct = null;
-		String fileName;
-		Scanner file;
 		
 		
 		
 		// Cordeau
-		File folder = new File("C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\15");
-		File[] listOfFiles = folder.listFiles();
-		String[] stringListOfFiles = new String[listOfFiles.length];
-		for (int i = 0; i < listOfFiles.length; i++) {
-		  if (listOfFiles[i].isFile()) {
-		    stringListOfFiles[i] = listOfFiles[i].getName();
-		  }
+		int[] numbersCordeau = {15,20,25,30,35,40};
+		int counter = 0;
+		String[] stringListOfFiles = new String[6*30];
+		for(int j=0;j<numbersCordeau.length;j++) {
+			File folder = new File("C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\"+Integer.toString(numbersCordeau[j]));
+			File[] listOfFiles = folder.listFiles();
+			for (int i = 0; i < listOfFiles.length; i++) {
+			  if (listOfFiles[i].isFile()) {
+			    stringListOfFiles[counter] = Integer.toString(numbersCordeau[j]) +"\\"+ listOfFiles[i].getName();
+			    counter++;
+			  }
+			}
 		}
 		for (String name :stringListOfFiles) {
 			System.out.println("\n"+name);
-			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\15\\"+name;
+			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\"+name;
 			
 			
 			DataReading dataReading = new DataReading("Cordeau",fileName);
@@ -42,18 +58,17 @@ public class Main_tdNearest {
 			//System.out.println(nbTimesteps);
 			durationTimestep = dataReading.getdurationTimestep();
 			//System.out.println(durationTimestep);
-			
-			System.out.println("check solution");
-			
+						
+			// Compare with given results
 			int[] solutionCordeau = {0,6,15,14,3,1,11,8 ,2 ,12, 4, 7, 9 ,13, 10, 5, 16};
 			int TtotalDuration = 0;
 			int TcurrentTimestep = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
 				TcurrentTimestep = TtotalDuration / durationTimestep;
 				TtotalDuration += distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep];
-				System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep]);
+				//System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep]);
 			}
-			System.out.println("total duration: " + TtotalDuration);
+			//System.out.println("total duration: " + TtotalDuration);
 			
 			
 			/*
@@ -117,74 +132,26 @@ public class Main_tdNearest {
 			//System.out.println(distanceFct[0][0][0]);
 			
 			// General TD-TSP
-			int[] cities = {5,6,8,23,34,51};
 			cities = new int[nbLocations];
 			for(int i=0;i<nbLocations;i++) {
 				cities[i] = i;
 			}
+			citiesHelp = new int[cities.length];
+			tspPath = new int[cities.length + 1];
+			bestResultPath = new int[cities.length + 1];
 			
-			int[] citiesHelp = new int[cities.length];
-			int[] tspPath = new int[cities.length + 1];
-			int currentTimestep = 0;
-			int totalDuration = 0;
-			int bestResult = 999999;
-			int[] bestResultPath = new int[cities.length + 1];
+
 			
 			// first fit
-			System.out.println("Iterated First-Fit algorithm");
-			for(int l = 0; l < cities.length; l++) {
-				totalDuration = 0;
-				for(int k = 0; k < cities.length -1; k++) {
-					currentTimestep = totalDuration / durationTimestep;
-					// for Cordeau
-					if(currentTimestep > nbTimesteps -1) {
-						currentTimestep = nbTimesteps -1;
-					}
-					totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
-				}
-				currentTimestep = totalDuration / durationTimestep;
-				// for Cordeau
-				if(currentTimestep > nbTimesteps -1) {
-					currentTimestep = nbTimesteps -1;
-				}
-				totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
-				
-				if(bestResult > totalDuration) {
-					bestResult = totalDuration;
-					for(int i = 0;i<bestResultPath.length -1;i++) {
-						bestResultPath[i] = cities[i];
-					}
-					bestResultPath[bestResultPath.length - 1] = bestResultPath[0];
-				}
-				
-				for(int m = 0; m < citiesHelp.length - 1; m++) {
-					citiesHelp[m] = cities[m+1];
-				}
-				citiesHelp[citiesHelp.length - 1] = cities[0];
-				
-				for(int m = 0; m < cities.length; m++) {
-					cities[m] = citiesHelp[m];
-				}
-			}
-			System.out.println(Arrays.toString(bestResultPath) + " , objective value: " + bestResult);
+			doFirstFit();
 			
-			try {
-				FileWriter writer = new FileWriter("test.csv",true);
-				writer.append("\nProblem;Heuristic;Objective value;Solution");
-				writer.append("\n"+fileName+";Iterated-First-Fit;"+bestResult+";"+Arrays.toString(bestResultPath));
-				writer.flush();
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-					  
 			// nearest neighbor
 			System.out.println("\n\nIterated nearest neighbor algorithm");
 			
 			Arrays.fill(tspPath, -1);
 			int startingCity;
 			int step;
-			int neighborTime;
+			double neighborTime;
 			boolean duplicate;
 			bestResult = 999999;
 			
@@ -200,7 +167,7 @@ public class Main_tdNearest {
 				
 				while (step < cities.length) {
 					neighborTime = 99999;
-					currentTimestep = totalDuration / durationTimestep;
+					currentTimestep = (int) (totalDuration / durationTimestep);
 					for (int j = 0; j < cities.length; j++ ) {
 						duplicate = false;
 						for (int k = 0; k < tspPath.length; k++) {
@@ -227,12 +194,12 @@ public class Main_tdNearest {
 			}
 			System.out.println(Arrays.toString(bestResultPath)+ "total duration: " + bestResult);
 
-			saveInCSV(fileName,"Iterated nearest neighbor algorithm",bestResult,bestResultPath);
+			saveInCSV(name,"Iterated nearest neighbor algorithm",bestResult,bestResultPath);
 			
 			// Nearest insertion algorithm
 			System.out.println("\n\nNearest insertion algorithm");	
 			Arrays.fill(tspPath, -1);
-			int compare = 99999;
+			double compare = 99999;
 			totalDuration = 0;
 			currentTimestep = 0;
 			// find first insertion
@@ -240,11 +207,11 @@ public class Main_tdNearest {
 			for(int i = 0; i < cities.length; i++) {
 				for(int j = 0; j < cities.length; j++) {
 					if(i != j) {
-						if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)] < compare) {
+						if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)] < compare) {
 							tspPath[0] = cities[i];
 							tspPath[1] = cities[j];
 							tspPath[2] = cities[i];
-							compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep];
+							compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)];
 						}
 					}
 				}
@@ -299,7 +266,12 @@ public class Main_tdNearest {
 							}
 							pathDuration = 0;
 							for(int m = 0; m < step;m++) {
-								pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/durationTimestep];
+								//for Cordeau
+								if (pathDuration/durationTimestep >= nbTimesteps) {
+									pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimesteps-1];
+								}else {
+									pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/durationTimestep];
+								}
 							}
 							if(pathDuration < compare) {
 								compare = pathDuration;
@@ -324,20 +296,62 @@ public class Main_tdNearest {
 				step++;
 			}
 			System.out.println(Arrays.toString(bestPath) + " , " + bestDuration);
-			saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,bestPath);
+			saveInCSV(name,"Nearest insertion algorithm",bestDuration,bestPath);
 			
 		}
 		
 	}
 	
-	public static void saveInCSV(String fileName, String heuristic,int bestResult, int[]bestResultPath) {
+	public static void saveInCSV(String fileName, String heuristic,double bestResult, int[]bestResultPath) {
 		try {
 			FileWriter writer = new FileWriter("test.csv",true);
-			writer.append("\n"+fileName+";"+heuristic+";"+bestResult+";"+Arrays.toString(bestResultPath));
+			writer.append("\n"+fileName+";"+heuristic+";"+(int)bestResult+";"+Arrays.toString(bestResultPath));
 			writer.flush();
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	public static void doFirstFit() {
+		System.out.println("Iterated First-Fit algorithm");
+		for(int l = 0; l < cities.length; l++) {
+			totalDuration = 0;
+			for(int k = 0; k < cities.length -1; k++) {
+				currentTimestep = (int) (totalDuration / durationTimestep);
+				// for Cordeau
+				if(currentTimestep > nbTimesteps -1) {
+					currentTimestep = nbTimesteps -1;
+				}
+				totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
+			}
+			currentTimestep = (int) (totalDuration / durationTimestep);
+			// for Cordeau
+			if(currentTimestep > nbTimesteps -1) {
+				currentTimestep = nbTimesteps -1;
+			}
+			totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
+			
+			if(bestResult > totalDuration) {
+				bestResult = totalDuration;
+				for(int i = 0;i<bestResultPath.length -1;i++) {
+					bestResultPath[i] = cities[i];
+				}
+				bestResultPath[bestResultPath.length - 1] = bestResultPath[0];
+			}
+			
+			for(int m = 0; m < citiesHelp.length - 1; m++) {
+				citiesHelp[m] = cities[m+1];
+			}
+			citiesHelp[citiesHelp.length - 1] = cities[0];
+			
+			for(int m = 0; m < cities.length; m++) {
+				cities[m] = citiesHelp[m];
+			}
+		}
+		System.out.println(Arrays.toString(bestResultPath) + " , objective value: " + bestResult);
+		
+		saveInCSV(fileName,"Iterated First-Fit algorithm",bestResult,bestResultPath);
+				  
+		
 	}
 }

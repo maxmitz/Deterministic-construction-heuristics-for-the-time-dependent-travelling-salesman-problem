@@ -1,4 +1,4 @@
-package td_nearestNeighbor;
+package tdConstruction;
 
 public class ChristofidesElement {
 	int vertice;
