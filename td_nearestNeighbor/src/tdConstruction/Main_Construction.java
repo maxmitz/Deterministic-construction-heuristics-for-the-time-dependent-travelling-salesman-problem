@@ -1,35 +1,34 @@
 package tdConstruction;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Main_Construction {
-	// Data reading general
+	
 	static int nbLocations = 0;
 	static int nbTimesteps = 0;
 	static int durationTimestep = 0;
 	static double[][][] distanceFct = null;
 	static String fileName;
-	Scanner file;
-	
+	static Scanner file;
 	static int[] cities;
-	
 	static int[] citiesHelp;
 	static int[] tspPath;
 	static int currentTimestep = 0;
 	static double totalDuration = 0;
 	static double bestResult = 999999;
 	static int[] bestResultPath;
-	
+	static int step;
+	static boolean duplicate;
 	
 	public static void main(String[]args) {
-		
-		
-		
-		
+
+		/*
 		// Cordeau
 		int[] numbersCordeau = {15,20,25,30,35,40};
 		int counter = 0;
@@ -51,15 +50,13 @@ public class Main_Construction {
 			
 			DataReading dataReading = new DataReading("Cordeau",fileName);
 			distanceFct = dataReading.getDistanceFct();
-			//System.out.println(Arrays.deepToString(distanceFct));
 			nbLocations = dataReading.getnbLocations();
-			//System.out.println(nbLocations);
 			nbTimesteps = dataReading.getnbTimesteps();
-			//System.out.println(nbTimesteps);
 			durationTimestep = dataReading.getdurationTimestep();
-			//System.out.println(durationTimestep);
-						
-			// Compare with given results
+				
+						*/
+			// Compare with given results from Cordeau
+			/*
 			int[] solutionCordeau = {0,6,15,14,3,1,11,8 ,2 ,12, 4, 7, 9 ,13, 10, 5, 16};
 			int TtotalDuration = 0;
 			int TcurrentTimestep = 0;
@@ -69,36 +66,9 @@ public class Main_Construction {
 				//System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep]);
 			}
 			//System.out.println("total duration: " + TtotalDuration);
-			
+			*/
 			
 			/*
-			
-			// Melgarejo + from
-			//fileName = "0609_shortestpath_15_91.txt";
-			fileName = "matrix00.txt";
-			fileName = "inst-61-6-8-D100_fromF.txt";
-					
-			try {
-				file = new Scanner(new File(fileName));
-				file.useLocale(Locale.US);
-				nbLocations = file.nextInt();		
-				nbTimesteps = file.nextInt();
-				durationTimestep = file.nextInt();
-				distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
-				
-				
-				for(int i=0;i<nbLocations;i++) {
-					for(int j=0;j<nbLocations;j++) {
-						for(int s=0;s<nbTimesteps;s++) {
-							distanceFct[i][j][s]=file.nextInt();
-
-						}
-					}
-				}
-				file.close();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
 			
 			
 			// Data read own
@@ -129,6 +99,7 @@ public class Main_Construction {
 				e.printStackTrace();
 			}
 			*/
+		/*
 			//System.out.println(distanceFct[0][0][0]);
 			
 			// General TD-TSP
@@ -140,165 +111,33 @@ public class Main_Construction {
 			tspPath = new int[cities.length + 1];
 			bestResultPath = new int[cities.length + 1];
 			
-
-			
-			// first fit
 			doFirstFit();
-			
-			// nearest neighbor
-			System.out.println("\n\nIterated nearest neighbor algorithm");
-			
-			Arrays.fill(tspPath, -1);
-			int startingCity;
-			int step;
-			double neighborTime;
-			boolean duplicate;
-			bestResult = 999999;
-			
-			
-			
-			for( int l = 0; l < cities.length; l ++) {
-				startingCity = cities[l];
-				Arrays.fill(tspPath, -1);
-				tspPath[0] = cities[l];
-				tspPath[tspPath.length - 1] = cities[l];
-				step = 1;
-				totalDuration = 0;
-				
-				while (step < cities.length) {
-					neighborTime = 99999;
-					currentTimestep = (int) (totalDuration / durationTimestep);
-					for (int j = 0; j < cities.length; j++ ) {
-						duplicate = false;
-						for (int k = 0; k < tspPath.length; k++) {
-							if (cities[j] == tspPath[k]) {
-								duplicate = true;
-							}
-						}
-						if (distanceFct[startingCity][cities[j]][currentTimestep] < neighborTime && !duplicate) {
-							tspPath[step] = cities[j];
-							neighborTime = distanceFct[startingCity][cities[j]][currentTimestep];
-						}
-					}
-					totalDuration += distanceFct[startingCity][tspPath[step]][currentTimestep];
-					startingCity = tspPath[step];
-					step++;
-				}
-				//System.out.println(Arrays.toString(tspPath)+ "total duration: " + totalDuration + ", current Timestep: " + currentTimestep);
-				if(totalDuration < bestResult) {
-					bestResult = totalDuration;
-					for(int i = 0;i<bestResultPath.length;i++) {
-						bestResultPath[i] = tspPath[i];
-					}
-				}
-			}
-			System.out.println(Arrays.toString(bestResultPath)+ "total duration: " + bestResult);
-
-			saveInCSV(name,"Iterated nearest neighbor algorithm",bestResult,bestResultPath);
-			
-			// Nearest insertion algorithm
-			System.out.println("\n\nNearest insertion algorithm");	
-			Arrays.fill(tspPath, -1);
-			double compare = 99999;
-			totalDuration = 0;
-			currentTimestep = 0;
-			// find first insertion
-
-			for(int i = 0; i < cities.length; i++) {
-				for(int j = 0; j < cities.length; j++) {
-					if(i != j) {
-						if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)] < compare) {
-							tspPath[0] = cities[i];
-							tspPath[1] = cities[j];
-							tspPath[2] = cities[i];
-							compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)];
-						}
-					}
-				}
-			}
-			totalDuration = compare;
-			step = 2;		
-			// flexible duration calculation
-			int pathDuration = 0;
-			
-			for(int i = 0; i < step;i++) {
-				pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][pathDuration/durationTimestep];
-			}
-			
-			// try second insertion
-			
-			int[] testPath = new int[tspPath.length];
-			int[] bestPath = new int[tspPath.length];
-			Arrays.fill(testPath, -1);
-			Arrays.fill(bestPath, -1);
-			int bestDuration = 0;
-			
-			//Changed to tspPath-1
-			while(step < tspPath.length) {
-				for(int i = 0; i <= step; i++) {
-					compare = 99999;
-					for(int j = 0; j < cities.length; j++) {
-						for(int k = 0; k <= step; k++) {
-							testPath[k] = tspPath[k];
-						}
-						// Check for duplicate
-						
-						duplicate = false;
-						
-						for(int n = 0; n <= step; n++) {
-							if(cities[j] == testPath[n]) {
-								duplicate = true;
-							}
-						}
-						
-						// !!! Do i miss one permutation? two positions for 0 ..
-						if(!duplicate){
-							if(i == 0) {
-								// insert at start and step + 1 and see if it is shorter than compare
-								testPath[0] = cities[j];
-								testPath[step+1] = cities[j];
-							} else {
-								for(int l = step; l >= i; l--) {
-									testPath[l+1] = testPath[l];
-								}
-								testPath[i] = cities[j];
-								testPath[step+1] = testPath[0];
-							}
-							pathDuration = 0;
-							for(int m = 0; m < step;m++) {
-								//for Cordeau
-								if (pathDuration/durationTimestep >= nbTimesteps) {
-									pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimesteps-1];
-								}else {
-									pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/durationTimestep];
-								}
-							}
-							if(pathDuration < compare) {
-								compare = pathDuration;
-								bestDuration = pathDuration;
-								for(int k = 0; k <= step + 1; k++) {
-									bestPath[k] = testPath[k];
-								}
-								//System.out.println(Arrays.toString(bestPath) + " , " + bestDuration + ", duplicate: " + duplicate);
-
-							}	
-						}
-					}
-					
-				}
-				for (int o = 0; o < tspPath.length;o++) {
-					tspPath[o] = bestPath[o];
-				}
-				pathDuration = 0;
-				for(int m = 0; m < step;m++) {
-					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][pathDuration/durationTimestep];
-				}
-				step++;
-			}
-			System.out.println(Arrays.toString(bestPath) + " , " + bestDuration);
-			saveInCSV(name,"Nearest insertion algorithm",bestDuration,bestPath);
-			
+			doNearestNeighbor();
+			doNearestInsertion();
 		}
+		*/
+		// Melgarejo + from
+		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";
+		//fileName = "inst-61-6-8-D100_fromF.txt";
+				
+		DataReading dataReading = new DataReading("Melgarejo",fileName);
+		distanceFct = dataReading.getDistanceFct();
+		nbLocations = dataReading.getnbLocations();
+		nbTimesteps = dataReading.getnbTimesteps();
+		durationTimestep = dataReading.getdurationTimestep();
+		
+		// General TD-TSP
+		cities = new int[nbLocations];
+		for(int i=0;i<nbLocations;i++) {
+			cities[i] = i;
+		}
+		citiesHelp = new int[cities.length];
+		tspPath = new int[cities.length + 1];
+		bestResultPath = new int[cities.length + 1];
+		
+		doFirstFit();
+		doNearestNeighbor();
+		doNearestInsertion();
 		
 	}
 	
@@ -353,5 +192,149 @@ public class Main_Construction {
 		saveInCSV(fileName,"Iterated First-Fit algorithm",bestResult,bestResultPath);
 				  
 		
+	}
+	
+	public static void doNearestNeighbor() {
+		System.out.println("Iterated nearest neighbor algorithm");
+		Arrays.fill(tspPath, -1);
+		int startingCity;
+		double neighborTime;
+		bestResult = 999999;
+		
+		for( int l = 0; l < cities.length; l ++) {
+			startingCity = cities[l];
+			Arrays.fill(tspPath, -1);
+			tspPath[0] = cities[l];
+			tspPath[tspPath.length - 1] = cities[l];
+			step = 1;
+			totalDuration = 0;
+			
+			while (step < cities.length) {
+				neighborTime = 99999;
+				currentTimestep = (int) (totalDuration / durationTimestep);
+				for (int j = 0; j < cities.length; j++ ) {
+					duplicate = false;
+					for (int k = 0; k < tspPath.length; k++) {
+						if (cities[j] == tspPath[k]) {
+							duplicate = true;
+						}
+					}
+					if (distanceFct[startingCity][cities[j]][currentTimestep] < neighborTime && !duplicate) {
+						tspPath[step] = cities[j];
+						neighborTime = distanceFct[startingCity][cities[j]][currentTimestep];
+					}
+				}
+				totalDuration += distanceFct[startingCity][tspPath[step]][currentTimestep];
+				startingCity = tspPath[step];
+				step++;
+			}
+			//System.out.println(Arrays.toString(tspPath)+ "total duration: " + totalDuration + ", current Timestep: " + currentTimestep);
+			if(totalDuration < bestResult) {
+				bestResult = totalDuration;
+				for(int i = 0;i<bestResultPath.length;i++) {
+					bestResultPath[i] = tspPath[i];
+				}
+			}
+		}
+		System.out.println(Arrays.toString(bestResultPath)+ "total duration: " + bestResult);
+
+		saveInCSV(fileName,"Iterated nearest neighbor algorithm",bestResult,bestResultPath);
+	}
+	
+	public static void doNearestInsertion() {
+		System.out.println("Nearest insertion algorithm");	
+		Arrays.fill(tspPath, -1);
+		double compare = 99999;
+		totalDuration = 0;
+		currentTimestep = 0;
+		// find first insertion
+
+		for(int i = 0; i < cities.length; i++) 
+			for(int j = 0; j < cities.length; j++)
+				if(i != j) {
+					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)] < compare) {
+						tspPath[0] = cities[i];
+						tspPath[1] = cities[j];
+						tspPath[2] = cities[i];
+						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)];
+					}
+				}
+		
+		totalDuration = compare;
+		step = 2;		
+		// flexible duration calculation
+		int pathDuration = 0;
+		
+		for(int i = 0; i < step;i++) {
+			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][pathDuration/durationTimestep];
+		}
+		
+		// try second insertion
+		
+		int[] testPath = new int[tspPath.length];
+		int[] bestPath = new int[tspPath.length];
+		Arrays.fill(testPath, -1);
+		Arrays.fill(bestPath, -1);
+		int bestDuration = 0;
+		
+		//Changed to tspPath-1
+		while(step < tspPath.length) {
+			for(int i = 0; i <= step; i++) {
+				compare = 99999;
+				for(int j = 0; j < cities.length; j++) {
+					for(int k = 0; k <= step; k++) {
+						testPath[k] = tspPath[k];
+					}
+					// Check for duplicate
+					
+					duplicate = false;
+					
+					for(int n = 0; n <= step; n++) 
+						if(cities[j] == testPath[n]) 
+							duplicate = true;
+					
+					if(!duplicate){
+						if(i == 0) {
+							// insert at start and step + 1 and see if it is shorter than compare
+							testPath[0] = cities[j];
+							testPath[step+1] = cities[j];
+						} else {
+							for(int l = step; l >= i; l--) {
+								testPath[l+1] = testPath[l];
+							}
+							testPath[i] = cities[j];
+							testPath[step+1] = testPath[0];
+						}
+						pathDuration = 0;
+						for(int m = 0; m < step;m++) {
+							//for Cordeau
+							if (pathDuration/durationTimestep >= nbTimesteps) {
+								pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimesteps-1];
+							}else {
+								pathDuration += distanceFct[testPath[m]][testPath[m+1]][pathDuration/durationTimestep];
+							}
+						}
+						if(pathDuration < compare) {
+							compare = pathDuration;
+							bestDuration = pathDuration;
+							for(int k = 0; k <= step + 1; k++) {
+								bestPath[k] = testPath[k];
+							}
+						}	
+					}
+				}
+				
+			}
+			for (int o = 0; o < tspPath.length;o++) {
+				tspPath[o] = bestPath[o];
+			}
+			pathDuration = 0;
+			for(int m = 0; m < step;m++) {
+				pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][pathDuration/durationTimestep];
+			}
+			step++;
+		}
+		System.out.println(Arrays.toString(bestPath) + " , " + bestDuration);
+		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,bestPath);
 	}
 }
