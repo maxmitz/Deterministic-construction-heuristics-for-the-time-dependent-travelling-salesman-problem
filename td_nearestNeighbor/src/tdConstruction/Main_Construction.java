@@ -26,13 +26,16 @@ public class Main_Construction {
 	static int step;
 	static boolean duplicate;
 	
+	static int bestDuration = 999999;
+	static String[] stringListOfFiles;
+	
 	public static void main(String[]args) {
 
 		/*
 		// Cordeau
 		int[] numbersCordeau = {15,20,25,30,35,40};
 		int counter = 0;
-		String[] stringListOfFiles = new String[6*30];
+		stringListOfFiles = new String[6*30];
 		for(int j=0;j<numbersCordeau.length;j++) {
 			File folder = new File("C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\"+Integer.toString(numbersCordeau[j]));
 			File[] listOfFiles = folder.listFiles();
@@ -68,37 +71,6 @@ public class Main_Construction {
 			//System.out.println("total duration: " + TtotalDuration);
 			*/
 			
-			/*
-			
-			
-			// Data read own
-			try {
-				file = new Scanner(new File(fileName));
-				file.useLocale(Locale.US);
-				nbLocations = file.nextInt();		
-				nbTimesteps = file.nextInt();
-				durationTimestep = file.nextInt();
-				distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
-				
-				for(int s=0;s<nbTimesteps;s++) {
-					for(int i=0;i<nbLocations;i++) {
-						for(int j=0;j<nbLocations;j++) {
-							distanceFct[i][j][s]=file.nextInt();
-							
-							while(distanceFct[i][j][s] == 0){
-								distanceFct[i][j][s]=file.nextInt();
-							}
-							if (distanceFct[i][j][s] == 0) {
-								distanceFct[i][j][s] = 9999;
-
-						}
-					}
-				}
-				file.close();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			*/
 		/*
 			//System.out.println(distanceFct[0][0][0]);
 			
@@ -115,13 +87,12 @@ public class Main_Construction {
 			doNearestNeighbor();
 			doNearestInsertion();
 		}
-		*/
-		// Melgarejo + from
+		
+		// Melgarejo
 		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";
-		//fileName = "inst-61-6-8-D100_fromF.txt";
 				
-		DataReading dataReading = new DataReading("Melgarejo",fileName);
-		distanceFct = dataReading.getDistanceFct();
+		DataReading dataReading = new DataReading(fileName);
+		distanceFct = dataReading.getDistanceFctMelgarejo();
 		nbLocations = dataReading.getnbLocations();
 		nbTimesteps = dataReading.getnbTimesteps();
 		durationTimestep = dataReading.getdurationTimestep();
@@ -135,10 +106,81 @@ public class Main_Construction {
 		tspPath = new int[cities.length + 1];
 		bestResultPath = new int[cities.length + 1];
 		
-		doFirstFit();
-		doNearestNeighbor();
-		doNearestInsertion();
+		//doFirstFit();
+		//doNearestNeighbor();
+		//doNearestInsertion();
 		
+		
+		// Compare with results from instances
+		
+		permute(java.util.Arrays.asList(222,190,81,32,9,132,240 ,74 ,127, 150),0);
+		*/
+		
+		// Rifki
+		String folderName = "C:\\\\Users\\\\m-zim\\\\Desktop\\\\Masterarbeit\\\\Benchmarks\\\\TDTSPBenchmark_Rifki";
+		File folder = new File(folderName);
+		File[] listOfFiles = folder.listFiles();
+		stringListOfFiles = new String[listOfFiles.length];
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+		  if (listOfFiles[i].isFile()) {
+		    stringListOfFiles[i] = listOfFiles[i].getName();
+		  }
+		}
+		
+		for(String fileName:stringListOfFiles) {
+			System.out.println("\n" + fileName);
+			DataReading dataReading = new DataReading(folderName + "\\" + fileName);
+			distanceFct = dataReading.getDistanceFctRifki();
+			nbLocations = dataReading.getnbLocations();
+			nbTimesteps = dataReading.getnbTimesteps();
+			durationTimestep = dataReading.getdurationTimestep();
+			
+			// General TD-TSP
+			cities = new int[nbLocations];
+			for(int i=0;i<nbLocations;i++) {
+				cities[i] = i;
+			}
+			citiesHelp = new int[cities.length];
+			tspPath = new int[cities.length + 1];
+			bestResultPath = new int[cities.length + 1];
+			
+			//doFirstFit();
+			//doNearestNeighbor();
+			//doNearestInsertion();
+			doSavingsAlgo();
+		}
+		
+		
+		/*
+		// Data read own
+		try {
+			file = new Scanner(new File(fileName));
+			file.useLocale(Locale.US);
+			nbLocations = file.nextInt();		
+			nbTimesteps = file.nextInt();
+			durationTimestep = file.nextInt();
+			distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
+			
+			for(int s=0;s<nbTimesteps;s++) {
+				for(int i=0;i<nbLocations;i++) {
+					for(int j=0;j<nbLocations;j++) {
+						distanceFct[i][j][s]=file.nextInt();
+						
+						while(distanceFct[i][j][s] == 0){
+							distanceFct[i][j][s]=file.nextInt();
+						}
+						if (distanceFct[i][j][s] == 0) {
+							distanceFct[i][j][s] = 9999;
+
+					}
+				}
+			}
+			file.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		*/
 	}
 	
 	public static void saveInCSV(String fileName, String heuristic,double bestResult, int[]bestResultPath) {
@@ -152,6 +194,7 @@ public class Main_Construction {
 		}
 	}
 	public static void doFirstFit() {
+		bestResult = 999999;
 		System.out.println("Iterated First-Fit algorithm");
 		for(int l = 0; l < cities.length; l++) {
 			totalDuration = 0;
@@ -337,4 +380,63 @@ public class Main_Construction {
 		System.out.println(Arrays.toString(bestPath) + " , " + bestDuration);
 		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,bestPath);
 	}
+	
+	static void doSavingsAlgo() {
+		
+		// 0 is depot
+		
+		int[] savingsPath = new int[cities.length + cities.length-1];
+		int counter = 1;
+		savingsPath[0]= 0;
+		for(int i = 1;i<savingsPath.length-1;i+=2){
+			savingsPath[i] = cities[counter];
+			counter++;
+			savingsPath[i+1] = 0;
+		}
+		System.out.println(Arrays.toString(savingsPath));
+		int totalDuration = 0;
+		int cycleDuration = 0;
+		int currentTimestep = 0;
+		for(int j = 0; j < savingsPath.length -1; j++) {
+			if(savingsPath[j]==0)
+				cycleDuration = 0;
+			currentTimestep = cycleDuration / durationTimestep;
+			totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+			cycleDuration +=distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+		}
+		System.out.println(totalDuration);
+
+	}
+	
+	
+	
+	
+	// Only for Mlegarejo permutation
+    static void permute(java.util.List<Integer> arr, int k){
+    	int[] solutionMelgarejo = {10,222,190,81,32,9,132,240 ,74 ,127, 150,10};
+        for(int i = k; i < arr.size(); i++){
+            java.util.Collections.swap(arr, i, k);
+            permute(arr, k+1);
+            java.util.Collections.swap(arr, k, i);
+        }
+        if (k == arr.size() -1){
+            //System.out.println(java.util.Arrays.toString(arr.toArray()));
+            for(int m = 1;m < solutionMelgarejo.length-1;m++) {
+            	solutionMelgarejo[m] = arr.get(m-1);
+            }
+    		int TtotalDuration = 0;
+    		int TcurrentTimestep = 0;
+    		for(int j = 0; j < solutionMelgarejo.length -1; j++) {
+    			TcurrentTimestep = TtotalDuration / durationTimestep;
+    			TtotalDuration += distanceFct[solutionMelgarejo[j]][solutionMelgarejo[j + 1]][TcurrentTimestep];
+    			//System.out.println("from: " + solutionMelgarejo[j] + " to: "+ solutionMelgarejo[j + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionMelgarejo[j]][solutionMelgarejo[j + 1]][TcurrentTimestep]);
+    		}
+    		if(TtotalDuration < bestDuration) {
+    			bestDuration = TtotalDuration;
+    			System.out.println("New best duration: " + bestDuration);
+    			System.out.println(Arrays.toString(solutionMelgarejo));
+    		}
+        }
+        //System.out.println("Final best duration: " + bestDuration);
+    }
 }
