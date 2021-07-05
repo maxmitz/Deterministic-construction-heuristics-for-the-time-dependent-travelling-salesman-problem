@@ -127,6 +127,9 @@ public class Main_Construction {
 		    stringListOfFiles[i] = listOfFiles[i].getName();
 		  }
 		}
+		// !!
+		stringListOfFiles = new String[1];
+		stringListOfFiles[0] = "inst-11-6-1-D100.txt";
 		
 		for(String fileName:stringListOfFiles) {
 			System.out.println("\n" + fileName);
@@ -145,9 +148,9 @@ public class Main_Construction {
 			tspPath = new int[cities.length + 1];
 			bestResultPath = new int[cities.length + 1];
 			
-			//doFirstFit();
-			//doNearestNeighbor();
-			//doNearestInsertion();
+			doFirstFit();
+			doNearestNeighbor();
+			doNearestInsertion();
 			doSavingsAlgo();
 		}
 		
@@ -382,30 +385,119 @@ public class Main_Construction {
 	}
 	
 	static void doSavingsAlgo() {
-		
-		// 0 is depot
-		
-		int[] savingsPath = new int[cities.length + cities.length-1];
-		int counter = 1;
-		savingsPath[0]= 0;
-		for(int i = 1;i<savingsPath.length-1;i+=2){
-			savingsPath[i] = cities[counter];
-			counter++;
-			savingsPath[i+1] = 0;
-		}
-		System.out.println(Arrays.toString(savingsPath));
-		int totalDuration = 0;
-		int cycleDuration = 0;
-		int currentTimestep = 0;
-		for(int j = 0; j < savingsPath.length -1; j++) {
-			if(savingsPath[j]==0)
-				cycleDuration = 0;
-			currentTimestep = cycleDuration / durationTimestep;
-			totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
-			cycleDuration +=distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
-		}
-		System.out.println(totalDuration);
+		System.out.println("Savings Algorithm");
+		int[] bestPathAllIterations = new int[cities.length +1];
+		double bestTimeAllIterations = Double.MAX_VALUE;
+		for(int depot : cities) {
+			int[] savingsPath = new int[cities.length + cities.length-1];
+			int counter = 0;
+			savingsPath[0]= depot;
+			for(int i = 1;i<savingsPath.length-1;i+=2){
+				if(cities[counter] != depot) {
+					savingsPath[i] = cities[counter];
+					savingsPath[i+1] = depot;
+				} else {
+					i -= 2;
+				}
+				counter++;
+			}
+			int totalDuration = 0;
+			int cycleDuration = 0;
+			int currentTimestep = 0;
+			for(int j = 0; j < savingsPath.length -1; j++) {
+				if(savingsPath[j]== depot)
+					cycleDuration = 0;
+				currentTimestep = cycleDuration / durationTimestep;
+				totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+				cycleDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+			}
+			boolean check = true;
+			while(savingsPath.length > cities.length + 1) {
+				bestResult = 999999;
+				check = false;
+				int[] helperCycle;
+				int[] helperPath = new int[savingsPath.length -1];
+				//find best saving and insert
+				for(int i=0;i<helperPath.length;i++){
+					if(savingsPath[i] == depot) {
+						int j = i + 1;
+						counter = 0;
+						while(savingsPath[j] != depot) {
+							counter++;
+							j++;
+						}
+						helperCycle = new int[counter];
+						for(int m= i+1;m<j;m++) {
+							helperCycle[m-i-1] = savingsPath[m];
+						}
+						
+						counter = 0;
+						// copy array without detected cycle
+						Arrays.fill(helperPath, depot);
+						
+						for(int m = 0;m<savingsPath.length;m++) {
+							if(m<i || m > i + helperCycle.length) {
+								helperPath[counter] = savingsPath[m];
+								counter++;
+							}
+						}
+						
+						// Insert at every position + evaluate (not first + not last spot)
+						int[] helperHelperPath = new int[helperPath.length];
+						for(int m=0;m<helperPath.length;m++) {
+							helperHelperPath[m] = helperPath[m];
+						}
+						for(int indexPosition = 1;indexPosition < helperPath.length-1-helperCycle.length;indexPosition++) {
+							for(int m=0;m<helperPath.length;m++) {
+								helperPath[m] = helperHelperPath[m];
+							}
+							for(int m=helperPath.length-1; m > indexPosition && m > helperCycle.length; m--){
+								helperPath[m] = helperPath[m-helperCycle.length];
+							}
+							for(int n=0;n<helperCycle.length;n++) {
+								helperPath[indexPosition + n] = helperCycle[n]; 
+							}
+							
+							//Calculate total duration
+							totalDuration = 0;
+							cycleDuration = 0;
+							currentTimestep = 0;
+							for(int m = 0; m < helperPath.length -1; m++) {
+								if(savingsPath[j]==depot)
+									cycleDuration = 0;
+								currentTimestep = cycleDuration / durationTimestep;
+								totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
+								cycleDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
+							}
+							//System.out.println(Arrays.toString(helperPath) + " total duration: "+ totalDuration);
+														
+	 						if (bestResult > totalDuration) {
+								bestResult = totalDuration;
+								bestResultPath = new int[helperPath.length];
+								for(int m=0;m<bestResultPath.length;m++) {
+									bestResultPath[m] = helperPath[m];
+								}
+							}
 
+						}
+					}
+				}
+				savingsPath = new int[bestResultPath.length];
+				for(int m = 0;m <savingsPath.length;m++) {
+					savingsPath[m] = bestResultPath[m];
+				}
+			}
+			//System.out.println(Arrays.toString(bestResultPath) + " total duration: " + bestResult);
+			if (bestResult < bestTimeAllIterations) {
+				bestTimeAllIterations = bestResult;
+				for(int m=0;m<bestResultPath.length;m++) {
+					bestPathAllIterations[m] = bestResultPath[m];
+				}
+			}
+		// Compare overall
+		}
+		System.out.println(Arrays.toString(bestPathAllIterations) + " total duration: "+ bestTimeAllIterations);
+		saveInCSV(fileName,"Savings algorithm",bestTimeAllIterations,bestPathAllIterations);
 	}
 	
 	
