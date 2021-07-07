@@ -25,6 +25,7 @@ public class Main_Construction {
 	static int[] bestResultPath;
 	static int step;
 	static boolean duplicate;
+	static double[][] distanceFctTimeIndependent;
 	
 	static int bestDuration = 999999;
 	static String[] stringListOfFiles;
@@ -117,6 +118,7 @@ public class Main_Construction {
 		*/
 		
 		// Rifki
+		System.out.println("Rifki Benchmark");
 		String folderName = "C:\\\\Users\\\\m-zim\\\\Desktop\\\\Masterarbeit\\\\Benchmarks\\\\TDTSPBenchmark_Rifki";
 		File folder = new File(folderName);
 		File[] listOfFiles = folder.listFiles();
@@ -148,10 +150,69 @@ public class Main_Construction {
 			tspPath = new int[cities.length + 1];
 			bestResultPath = new int[cities.length + 1];
 			
+			// test
+			
+			int[] helperPath  = {5, 0, 6, 3, 7, 2, 4, 9, 10, 1, 8, 5};
+			totalDuration = 0;
+			currentTimestep = 0;
+			for(int m = 0; m < helperPath.length -1; m++) {
+				currentTimestep = (int) (totalDuration / durationTimestep);
+				totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
+			}
+			System.out.println(Arrays.toString(helperPath) + " , teeeeeeeeeeeeeest duration: "+ totalDuration);
+			// test
+			
 			doFirstFit();
 			doNearestNeighbor();
 			doNearestInsertion();
 			doSavingsAlgo();
+			doChristofidesAlgorithm();
+		}
+		
+		// Normal TSP
+		
+		folderName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TSPBenchmarks";
+		folder = new File(folderName);
+		listOfFiles = folder.listFiles();
+		stringListOfFiles = new String[listOfFiles.length];
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+		  if (listOfFiles[i].isFile()) {
+		    stringListOfFiles[i] = listOfFiles[i].getName();
+		  }
+		}
+
+		for(String fileName:stringListOfFiles) {
+			System.out.println("\n" + fileName);
+			DataReading dataReading = new DataReading(folderName + "\\" + fileName);
+			distanceFctTimeIndependent = dataReading.getDistanceFctTimeIndependent();
+			nbLocations = dataReading.getnbLocations();
+			nbTimesteps = 1;
+			durationTimestep = Integer.MAX_VALUE;
+			
+			distanceFct = new double[nbLocations][nbLocations][1];
+			for(int i = 0; i<nbLocations;i++) {
+				for(int j = 0; j<nbLocations;j++) {
+					distanceFct[i][j][0] = distanceFctTimeIndependent[i][j];
+				}
+			}
+			
+			// General TD-TSP
+			cities = new int[nbLocations];
+			for(int i=0;i<nbLocations;i++) {
+				cities[i] = i;
+			}
+			citiesHelp = new int[cities.length];
+			tspPath = new int[cities.length + 1];
+			bestResultPath = new int[cities.length + 1];
+			
+			/*
+			doFirstFit();
+			doNearestNeighbor();
+			doNearestInsertion();
+			doSavingsAlgo();
+			doChristofidesAlgorithm();
+			*/
 		}
 		
 		
@@ -196,6 +257,7 @@ public class Main_Construction {
 			e.printStackTrace();
 		}
 	}
+	
 	public static void doFirstFit() {
 		bestResult = 999999;
 		System.out.println("Iterated First-Fit algorithm");
@@ -385,7 +447,7 @@ public class Main_Construction {
 	}
 	
 	static void doSavingsAlgo() {
-		System.out.println("Savings Algorithm");
+		System.out.println("Iterated Savings Algorithm");
 		int[] bestPathAllIterations = new int[cities.length +1];
 		double bestTimeAllIterations = Double.MAX_VALUE;
 		for(int depot : cities) {
@@ -411,10 +473,8 @@ public class Main_Construction {
 				totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
 				cycleDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
 			}
-			boolean check = true;
 			while(savingsPath.length > cities.length + 1) {
 				bestResult = 999999;
-				check = false;
 				int[] helperCycle;
 				int[] helperPath = new int[savingsPath.length -1];
 				//find best saving and insert
@@ -463,7 +523,7 @@ public class Main_Construction {
 							cycleDuration = 0;
 							currentTimestep = 0;
 							for(int m = 0; m < helperPath.length -1; m++) {
-								if(savingsPath[j]==depot)
+								if(helperPath[m]==depot)
 									cycleDuration = 0;
 								currentTimestep = cycleDuration / durationTimestep;
 								totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
@@ -487,7 +547,7 @@ public class Main_Construction {
 					savingsPath[m] = bestResultPath[m];
 				}
 			}
-			//System.out.println(Arrays.toString(bestResultPath) + " total duration: " + bestResult);
+			System.out.println(Arrays.toString(bestResultPath) + " total duration: " + bestResult);
 			if (bestResult < bestTimeAllIterations) {
 				bestTimeAllIterations = bestResult;
 				for(int m=0;m<bestResultPath.length;m++) {
@@ -496,8 +556,73 @@ public class Main_Construction {
 			}
 		// Compare overall
 		}
-		System.out.println(Arrays.toString(bestPathAllIterations) + " total duration: "+ bestTimeAllIterations);
+		System.out.println(Arrays.toString(bestPathAllIterations) + " best duration: "+ bestTimeAllIterations);
 		saveInCSV(fileName,"Savings algorithm",bestTimeAllIterations,bestPathAllIterations);
+		
+	}
+	
+	static void doChristofidesAlgorithm() {
+		System.out.println("Christofides Algorithm");
+		// transform matrix
+		double[][] distanceFctTimeindependent = new double[nbLocations][nbLocations];
+		
+		for(int i = 0;i<nbLocations;i++) {
+			for(int j = 0;j<nbLocations;j++) {
+				for(int t = 0;t<nbTimesteps;t++) {
+					distanceFctTimeindependent[i][j] += distanceFct[i][j][t];
+				}
+				distanceFctTimeindependent[i][j] = distanceFctTimeindependent[i][j] / nbTimesteps;
+			}
+		}
+		
+		for(int i = 0;i<nbLocations;i++) {
+			for(int j = 0;j<nbLocations;j++) {
+				if(i != j) {
+					distanceFctTimeindependent[i][j] = (distanceFctTimeindependent[i][j] + distanceFctTimeindependent[j][i]) /2;
+					distanceFctTimeindependent[j][i] = distanceFctTimeindependent[i][j];
+				}
+			}
+		}
+		
+		for(int i = 0;i<nbLocations;i++) {
+			//System.out.println(Arrays.toString(distanceFctTimeindependent[i]));
+		}
+		// calculate minimum spanning tree (Kruskal)
+		
+		int[] mst = new int[cities.length];
+		int[] mstIn = new int[cities.length];
+		Arrays.fill(mst, -1);
+		
+		for(int k = 0;k<mst.length -1;k++) {
+			double compare = 999999;
+			for(int i = 0;i<nbLocations;i++) {
+				for(int j = 0;j<nbLocations;j++) {
+					if(distanceFctTimeindependent[i][j] < compare && i !=j) {
+						boolean duplicate = false;
+						for(int m = 0;m<k+1;m++) {
+							if(mst[m] == j) {
+								duplicate = true;
+							}
+						}
+						
+						if(!duplicate){
+							compare = distanceFctTimeindependent[i][j];
+							if(k == 0)
+								mst[k] = i;
+							mst[k+1] = j; 
+							mstIn[k+1] = i;
+						}
+					}
+				}
+			}
+			// ??? Add to graph?? or store differently?	
+		}
+		//System.out.println(Arrays.toString(mst));
+		//System.out.println(Arrays.toString(mstIn));
+		
+		// calculate odd degree vertices (Floyd-Warshall)
+		
+		//
 	}
 	
 	
