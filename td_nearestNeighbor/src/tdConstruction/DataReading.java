@@ -73,7 +73,9 @@ public class DataReading {
 			for(int j = 0;j<3;j++) {
 				for(int t = 0;t<3;t++) {
 					speed[t][j] = file.nextDouble();
+					System.out.print(speed[t][j] +" ");
 				}
+				System.out.println();
 			}
 			for (int i=0;i< 9; i++) {
 				file.nextLine();
@@ -93,7 +95,7 @@ public class DataReading {
 			for(int i = 0;i<this.nbLocations;i++) {
 				for(int j = 0;j<this.nbLocations;j++) {
 					for(int t = 0;t<this.nbTimesteps;t++) {
-						distanceFct[i][j][t] = distanceFct_Cordeau[i][j] / speed[t][zone[i]-1];
+						distanceFct[i][j][t] = distanceFct_Cordeau[i][j] / speed[t][zone[i       ]-1];
 					}
 				}
 			}
@@ -146,7 +148,9 @@ public class DataReading {
 				for(int j=0;j<nbLocations;j++) {
 					for(int s=0;s<this.nbTimesteps;s++) {
 						distanceFct[i][j][s]=file.nextInt();
-
+						if(j!= 0) {
+							distanceFct[i][j][s] += 180;
+						}
 					}
 				}
 			}
