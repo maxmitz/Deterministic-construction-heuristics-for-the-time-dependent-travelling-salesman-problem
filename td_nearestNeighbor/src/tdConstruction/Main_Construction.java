@@ -14,8 +14,8 @@ import java.util.Scanner;
 public class Main_Construction {
 	
 	static int nbLocations = 0;
-	static int nbTimesteps = 0;
-	static int durationTimestep = 0;
+	static int nbTimeSteps = 0;
+	static int durationTimeStep = 0;
 	static double[][][] distanceFct = null;
 	static String fileName;
 	static Scanner file;
@@ -33,6 +33,10 @@ public class Main_Construction {
 	static double bestDuration = 999999;
 	static String[] stringListOfFiles;
 	static int counter;
+	
+	//from FIFO
+	private static FIFOTimeStep[][][] FIFODistanceFct;
+
 	
 	public static void main(String[]args) throws FileNotFoundException {
 
@@ -63,8 +67,8 @@ public class Main_Construction {
 			DataReading dataReading = new DataReading(fileName);
 			distanceFct = dataReading.getDistanceFctCordeau();
 			nbLocations = dataReading.getnbLocations();
-			nbTimesteps = dataReading.getnbTimesteps();
-			durationTimestep = dataReading.getdurationTimestep();
+			nbTimeSteps = dataReading.getnbTimeSteps();
+			durationTimeStep = dataReading.getdurationTimeStep();
 				
 						
 			// Compare with given results from Cordeau
@@ -73,7 +77,7 @@ public class Main_Construction {
 			double TtotalDuration = 0;
 			int TcurrentTimestep = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
-				TcurrentTimestep = (int) (TtotalDuration / durationTimestep);
+				TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
 				TtotalDuration += distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep];
 				System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep] + " total " + TtotalDuration );
 			}
@@ -103,8 +107,8 @@ public class Main_Construction {
 		DataReading dataReading = new DataReading(fileName);
 		distanceFct = dataReading.getDistanceFctMelgarejo();
 		nbLocations = dataReading.getnbLocations();
-		nbTimesteps = dataReading.getnbTimesteps();
-		durationTimestep = dataReading.getdurationTimestep();
+		nbTimeSteps = dataReading.getnbTimeSteps();
+		durationTimeStep = dataReading.getdurationTimeStep();
 		
 		// Get instances
 	
@@ -148,10 +152,13 @@ public class Main_Construction {
 			System.out.println(distanceFct[222][240][0]);
 			for(int i = 0;i<cities.length;i++)
 				for(int j = 0;j<serviceTime.length;j++) 
-					for(int t = 0;t<nbTimesteps;t++) 
+					for(int t = 0;t<nbTimeSteps;t++) 
 						distanceFct[cities[i]][cities[j]][t] +=serviceTime[j];
 			
-			System.out.println(distanceFct[222][240][0]);
+			// include FIFO
+			
+			setFIFODistanceFct();			
+			System.out.println(distanceFct[0][1][10] + "  " + getFIFOTravellingTime(0, 1,3955));
 			
 			citiesHelp = new int[cities.length];
 			tspPath = new int[cities.length + 1];
@@ -170,7 +177,7 @@ public class Main_Construction {
 			double TtotalDuration = 0;
 			int TcurrentTimestep = 0;
 			for(int k = 0; k < solution.length -1; k++) {
-				TcurrentTimestep = (int) (TtotalDuration / durationTimestep);
+				TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
 				TtotalDuration += distanceFct[solution[k]][solution[k + 1]][TcurrentTimestep];
 				//System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][TcurrentTimestep] + " total " + TtotalDuration );
 			}
@@ -201,8 +208,8 @@ public class Main_Construction {
 			DataReading dataReading = new DataReading(folderName + "\\" + fileName);
 			distanceFct = dataReading.getDistanceFctRifki();
 			nbLocations = dataReading.getnbLocations();
-			nbTimesteps = dataReading.getnbTimesteps();
-			durationTimestep = dataReading.getdurationTimestep();
+			nbTimeSteps = dataReading.getnbTimeSteps();
+			durationTimeStep = dataReading.getdurationTimeStep();
 			
 			// General TD-TSP
 			cities = new int[nbLocations];
@@ -239,8 +246,8 @@ public class Main_Construction {
 			DataReading dataReading = new DataReading(folderName + "\\" + fileName);
 			distanceFctTimeIndependent = dataReading.getDistanceFctTimeIndependent();
 			nbLocations = dataReading.getnbLocations();
-			nbTimesteps = 1;
-			durationTimestep = Integer.MAX_VALUE;
+			nbTimeSteps = 1;
+			durationTimeStep = Integer.MAX_VALUE;
 			
 			distanceFct = new double[nbLocations][nbLocations][1];
 			for(int i = 0; i<nbLocations;i++) {
@@ -274,11 +281,11 @@ public class Main_Construction {
 			file = new Scanner(new File(fileName));
 			file.useLocale(Locale.US);
 			nbLocations = file.nextInt();		
-			nbTimesteps = file.nextInt();
-			durationTimestep = file.nextInt();
-			distanceFct = new int[nbLocations][nbLocations][nbTimesteps];
+			nbTimeSteps = file.nextInt();
+			durationTimeStep = file.nextInt();
+			distanceFct = new int[nbLocations][nbLocations][nbTimeSteps];
 			
-			for(int s=0;s<nbTimesteps;s++) {
+			for(int s=0;s<nbTimeSteps;s++) {
 				for(int i=0;i<nbLocations;i++) {
 					for(int j=0;j<nbLocations;j++) {
 						distanceFct[i][j][s]=file.nextInt();
@@ -324,17 +331,17 @@ public class Main_Construction {
 		for(int l = 0; l < 1; l++) {
 			totalDuration = 0;
 			for(int k = 0; k < cities.length -1; k++) {
-				currentTimestep = (int) (totalDuration / durationTimestep);
+				currentTimestep = (int) (totalDuration / durationTimeStep);
 				// for Melgarejo
-				if(currentTimestep > nbTimesteps -1) {
-					currentTimestep = nbTimesteps -1;
+				if(currentTimestep > nbTimeSteps -1) {
+					currentTimestep = nbTimeSteps -1;
 				}
 				totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
 			}
-			currentTimestep = (int) (totalDuration / durationTimestep);
+			currentTimestep = (int) (totalDuration / durationTimeStep);
 			// for Cordeau
-			if(currentTimestep > nbTimesteps -1) {
-				currentTimestep = nbTimesteps -1;
+			if(currentTimestep > nbTimeSteps -1) {
+				currentTimestep = nbTimeSteps -1;
 			}
 			totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
 			
@@ -394,7 +401,7 @@ public class Main_Construction {
 			
 			while (step < cities.length) {
 				neighborTime = 99999;
-				currentTimestep = (int) (totalDuration / durationTimestep);
+				currentTimestep = (int) (totalDuration / durationTimeStep);
 				for (int j = 0; j < cities.length; j++ ) {
 					duplicate = false;
 					for (int k = 0; k < tspPath.length; k++) {
@@ -411,7 +418,7 @@ public class Main_Construction {
 				startingCity = tspPath[step];
 				step++;
 			}
-			currentTimestep = (int) (totalDuration / durationTimestep);
+			currentTimestep = (int) (totalDuration / durationTimeStep);
 			totalDuration += distanceFct[tspPath[tspPath.length-2]][tspPath[tspPath.length-1]][currentTimestep];
 			//System.out.println(Arrays.toString(tspPath)+ "total duration: " + totalDuration + ", current Timestep: " + currentTimestep);
 			if(totalDuration < bestResult) {
@@ -441,11 +448,11 @@ public class Main_Construction {
 		for(int i = 0; i < 1; i++) 
 			for(int j = 0; j < cities.length; j++)
 				if(i != j) {
-					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)] < compare) {
+					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)] < compare) {
 						tspPath[0] = cities[i];
 						tspPath[1] = cities[j];
 						tspPath[2] = cities[i];
-						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimestep)];
+						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)];
 					}
 				}
 		
@@ -455,7 +462,7 @@ public class Main_Construction {
 		double pathDuration = 0;
 		
 		for(int i = 0; i < step;i++) {
-			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][(int) (pathDuration/durationTimestep)];
+			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][(int) (pathDuration/durationTimeStep)];
 		}
 		
 		// try second insertion
@@ -497,10 +504,10 @@ public class Main_Construction {
 						pathDuration = 0;
 						for(int m = 0; m <= step;m++) {
 							// for Melgarejo
-							if (pathDuration/durationTimestep >= nbTimesteps) {
-								pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimesteps-1];
+							if (pathDuration/durationTimeStep >= nbTimeSteps) {
+								pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimeSteps-1];
 							} else {
-								pathDuration += distanceFct[testPath[m]][testPath[m+1]][(int) (pathDuration/durationTimestep)];
+								pathDuration += distanceFct[testPath[m]][testPath[m+1]][(int) (pathDuration/durationTimeStep)];
 							}
 						}
 						if(pathDuration < compare) {
@@ -520,10 +527,10 @@ public class Main_Construction {
 			pathDuration = 0;
 			for(int m = 0; m < step;m++) {
 				// for Melgarejo
-				if (pathDuration/durationTimestep >= nbTimesteps) {
-					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][nbTimesteps -1];
+				if (pathDuration/durationTimeStep >= nbTimeSteps) {
+					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][nbTimeSteps -1];
 				} else {
-					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][(int) (pathDuration/durationTimestep)];
+					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][(int) (pathDuration/durationTimeStep)];
 				}
 			}
 			step++;
@@ -559,7 +566,7 @@ public class Main_Construction {
 			for(int j = 0; j < savingsPath.length -1; j++) {
 				if(savingsPath[j]== depot)
 					cycleDuration = 0;
-				currentTimestep = (int) (cycleDuration / durationTimestep);
+				currentTimestep = (int) (cycleDuration / durationTimeStep);
 				totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
 				cycleDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
 			}
@@ -615,7 +622,7 @@ public class Main_Construction {
 							for(int m = 0; m < helperPath.length -1; m++) {
 								if(helperPath[m]==depot)
 									cycleDuration = 0;
-								currentTimestep = (int) (cycleDuration / durationTimestep);
+								currentTimestep = (int) (cycleDuration / durationTimeStep);
 								totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
 								cycleDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
 							}
@@ -662,10 +669,10 @@ public class Main_Construction {
 		
 		for(int i = 0;i<nbLocations;i++) {
 			for(int j = 0;j<nbLocations;j++) {
-				for(int t = 0;t<nbTimesteps;t++) {
+				for(int t = 0;t<nbTimeSteps;t++) {
 					distanceFctTimeindependent[i][j] += distanceFct[i][j][t];
 				}
-				distanceFctTimeindependent[i][j] = distanceFctTimeindependent[i][j] / nbTimesteps;
+				distanceFctTimeindependent[i][j] = distanceFctTimeindependent[i][j] / nbTimeSteps;
 			}
 		}
 		
@@ -749,11 +756,11 @@ public class Main_Construction {
         		int TcurrentTimestep = 0;
         		TtotalDuration = distanceFct[222][solutionMelgarejo[0]][0];
         		for(int j = 0; j < solutionMelgarejo.length -1; j++) {
-        			TcurrentTimestep = (int) (TtotalDuration / durationTimestep);
+        			TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
         			TtotalDuration += distanceFct[solutionMelgarejo[j]][solutionMelgarejo[j + 1]][TcurrentTimestep];
         			//System.out.println("from: " + solutionMelgarejo[j] + " to: "+ solutionMelgarejo[j + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionMelgarejo[j]][solutionMelgarejo[j + 1]][TcurrentTimestep]);
         		}
-        		TcurrentTimestep = (int) (TtotalDuration / durationTimestep);
+        		TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
         		TtotalDuration += distanceFct[solutionMelgarejo[solutionMelgarejo.length-1]][222][TcurrentTimestep];
         		if(TtotalDuration < bestDuration) {
         			bestDuration = TtotalDuration;
@@ -764,4 +771,61 @@ public class Main_Construction {
         }
         //System.out.println("Final best duration: " + bestDuration);
     }
+    
+    
+	/**
+	 * Transform the distance function into one that respects the FIFO (First In First Out) property
+	 */
+	public static void setFIFODistanceFct() {
+
+		FIFODistanceFct = new FIFOTimeStep[nbLocations][nbLocations][nbTimeSteps];
+		for(int i=0;i<nbLocations;i++) {
+			for(int j=0;j<nbLocations;j++) {
+				for(int s=0;s<nbTimeSteps;s++) {
+					if(s==0) {
+						if(getTravellingTimeTimeStep(i, j, s)>getTravellingTimeTimeStep(i, j, (s+1))) {
+							FIFOTimeStep fts = new FIFOTimeStep(getTravellingTimeTimeStep(i, j, s));
+							LinearFunction f = new LinearFunction(getTravellingTimeTimeStep(i, j, (s+1)),(s+1)*durationTimeStep);
+							fts.setLinearFunction(f);
+							FIFODistanceFct[i][j][s]=fts;
+						}
+						else {
+							FIFOTimeStep fts = new FIFOTimeStep(getTravellingTimeTimeStep(i, j, s));
+							FIFODistanceFct[i][j][s]=fts;
+						}
+					}
+					if(s>0 && s<nbTimeSteps-1) {
+						if(getTravellingTimeTimeStep(i, j, s)>getTravellingTimeTimeStep(i, j, (s+1))) {
+							FIFOTimeStep fts = new FIFOTimeStep(getTravellingTimeTimeStep(i, j, s));
+							LinearFunction f = new LinearFunction(getTravellingTimeTimeStep(i, j, (s+1)),(s+1)*durationTimeStep);
+							fts.setLinearFunction(f);
+							FIFODistanceFct[i][j][s]=fts;
+							for (int sprime=0; sprime<s;sprime++) {
+								if(f.getB()<FIFODistanceFct[i][j][sprime].getF().getB()) {
+									FIFODistanceFct[i][j][sprime].setLinearFunction(f);
+								}
+							}
+						}
+						else {
+							FIFOTimeStep fts = new FIFOTimeStep(getTravellingTimeTimeStep(i, j, s));
+							FIFODistanceFct[i][j][s]=fts;
+						}
+					}
+					if(s==nbTimeSteps-1) {
+						FIFOTimeStep fts = new FIFOTimeStep(getTravellingTimeTimeStep(i, j, s));
+						FIFODistanceFct[i][j][s]=fts;
+					}
+				}
+			}
+		}
+	}
+	
+	public static double getTravellingTimeTimeStep(int i, int j, int s) {
+		return distanceFct[i][j][s];
+	}
+	
+	public static double getFIFOTravellingTime(int i, int j, int time) {
+			return FIFODistanceFct[i][j][time/durationTimeStep].getCost(time);
+
+	}
 }
