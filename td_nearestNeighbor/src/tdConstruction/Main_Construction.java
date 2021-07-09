@@ -74,14 +74,14 @@ public class Main_Construction {
 			// Compare with given results from Cordeau
 			
 			int[] solutionCordeau = {0, 6 ,15 ,14, 3 ,1 ,11, 8, 2, 12, 4 ,7, 9, 13 ,10, 5, 0};
-			double TtotalDuration = 0;
-			int TcurrentTimestep = 0;
+			double tTotalDuration = 0;
+			int tCurrentTimestep = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
-				TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
-				TtotalDuration += distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep];
-				System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][TcurrentTimestep] + " total " + TtotalDuration );
+				tCurrentTimestep = (int) (tTotalDuration / durationTimeStep);
+				tTotalDuration += distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep];
+				System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
 			}
-			System.out.println("total duration: " + TtotalDuration);
+			System.out.println("total duration: " + tTotalDuration);
 						
 			// General TD-TSP
 			cities = new int[nbLocations-1];
@@ -149,7 +149,7 @@ public class Main_Construction {
 			}
 			file.close();
 			
-			System.out.println(distanceFct[222][240][0]);
+			//System.out.println(distanceFct[222][240][0]);
 			for(int i = 0;i<cities.length;i++)
 				for(int j = 0;j<serviceTime.length;j++) 
 					for(int t = 0;t<nbTimeSteps;t++) 
@@ -158,7 +158,7 @@ public class Main_Construction {
 			// include FIFO
 			
 			setFIFODistanceFct();			
-			System.out.println(distanceFct[0][1][10] + "  " + getFIFOTravellingTime(0, 1,3955));
+			//System.out.println(distanceFct[0][1][10] + "  " + getFIFOTravellingTime(0, 1,3955));
 			
 			citiesHelp = new int[cities.length];
 			tspPath = new int[cities.length + 1];
@@ -171,17 +171,18 @@ public class Main_Construction {
 			//doChristofidesAlgorithm();
 			
 			// Compare with results from instances
-			// permute(java.util.Arrays.asList(190,81,32,9,132,240 ,74 ,127, 150),0);
+			counter = 0;
+			permute(java.util.Arrays.asList(190,81,32,9,132,240 ,74 ,127, 150),0);
 		
-			int[] solution = {222, 240, 190, 150, 127, 32, 74, 81, 9, 132, 222};
-			double TtotalDuration = 0;
-			int TcurrentTimestep = 0;
+			int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			double tTotalDuration = 0;
+			int tCurrentTimestep = 0;
 			for(int k = 0; k < solution.length -1; k++) {
-				TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
-				TtotalDuration += distanceFct[solution[k]][solution[k + 1]][TcurrentTimestep];
-				//System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][TcurrentTimestep] + " total " + TtotalDuration );
+				tCurrentTimestep = (int) (tTotalDuration / durationTimeStep);
+				tTotalDuration += distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep];
+				//System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
 			}
-			//System.out.println("total duration: " + TtotalDuration);
+			System.out.println("total duration: " + tTotalDuration);
 		
 		}
 		
@@ -336,15 +337,17 @@ public class Main_Construction {
 				if(currentTimestep > nbTimeSteps -1) {
 					currentTimestep = nbTimeSteps -1;
 				}
-				totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
+				// totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
+				totalDuration += getFIFOTravellingTime(cities[k],cities[k+1],totalDuration);
 			}
 			currentTimestep = (int) (totalDuration / durationTimeStep);
 			// for Cordeau
 			if(currentTimestep > nbTimeSteps -1) {
 				currentTimestep = nbTimeSteps -1;
 			}
-			totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
-			
+			//totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
+			totalDuration += getFIFOTravellingTime(cities[cities.length -1],cities[0],totalDuration);
+
 			if(bestResult > totalDuration) {
 				bestResult = totalDuration;
 				for(int i = 0;i<bestResultPath.length -1;i++) {
@@ -409,17 +412,22 @@ public class Main_Construction {
 							duplicate = true;
 						}
 					}
-					if (distanceFct[startingCity][cities[j]][currentTimestep] < neighborTime && !duplicate) {
+					//if (distanceFct[startingCity][cities[j]][currentTimestep] < neighborTime && !duplicate) {
+					if (getFIFOTravellingTime(startingCity,cities[j],totalDuration) < neighborTime && !duplicate){;
 						tspPath[step] = cities[j];
-						neighborTime = distanceFct[startingCity][cities[j]][currentTimestep];
+						//neighborTime = distanceFct[startingCity][cities[j]][currentTimestep];
+						neighborTime= getFIFOTravellingTime(startingCity,cities[j],totalDuration);
+
 					}
 				}
-				totalDuration += distanceFct[startingCity][tspPath[step]][currentTimestep];
+				//totalDuration += distanceFct[startingCity][tspPath[step]][currentTimestep];
+				totalDuration += getFIFOTravellingTime(startingCity,tspPath[step],totalDuration);
 				startingCity = tspPath[step];
 				step++;
 			}
 			currentTimestep = (int) (totalDuration / durationTimeStep);
-			totalDuration += distanceFct[tspPath[tspPath.length-2]][tspPath[tspPath.length-1]][currentTimestep];
+			//totalDuration += distanceFct[tspPath[tspPath.length-2]][tspPath[tspPath.length-1]][currentTimestep];
+			totalDuration += getFIFOTravellingTime(tspPath[tspPath.length-2],tspPath[tspPath.length-1],totalDuration);
 			//System.out.println(Arrays.toString(tspPath)+ "total duration: " + totalDuration + ", current Timestep: " + currentTimestep);
 			if(totalDuration < bestResult) {
 				bestResult = totalDuration;
@@ -448,11 +456,13 @@ public class Main_Construction {
 		for(int i = 0; i < 1; i++) 
 			for(int j = 0; j < cities.length; j++)
 				if(i != j) {
-					if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)] < compare) {
+					//if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)] < compare) {
+					if(getFIFOTravellingTime(cities[i],cities[j],totalDuration) + getFIFOTravellingTime(cities[j],cities[i],totalDuration) < compare) {	
 						tspPath[0] = cities[i];
 						tspPath[1] = cities[j];
 						tspPath[2] = cities[i];
-						compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)];
+						//compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)];
+						compare = getFIFOTravellingTime(cities[i],cities[j],totalDuration) + getFIFOTravellingTime(cities[j],cities[i],totalDuration);
 					}
 				}
 		
@@ -462,7 +472,8 @@ public class Main_Construction {
 		double pathDuration = 0;
 		
 		for(int i = 0; i < step;i++) {
-			pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][(int) (pathDuration/durationTimeStep)];
+			//pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][(int) (pathDuration/durationTimeStep)];
+			pathDuration += getFIFOTravellingTime(tspPath[i],tspPath[i+1],pathDuration);
 		}
 		
 		// try second insertion
@@ -505,9 +516,11 @@ public class Main_Construction {
 						for(int m = 0; m <= step;m++) {
 							// for Melgarejo
 							if (pathDuration/durationTimeStep >= nbTimeSteps) {
-								pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimeSteps-1];
+								//pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimeSteps-1];
+								pathDuration += getFIFOTravellingTime(testPath[m],testPath[m+1],nbTimeSteps-1);
 							} else {
-								pathDuration += distanceFct[testPath[m]][testPath[m+1]][(int) (pathDuration/durationTimeStep)];
+								//pathDuration += distanceFct[testPath[m]][testPath[m+1]][(int) (pathDuration/durationTimeStep)];
+								pathDuration += getFIFOTravellingTime(testPath[m],testPath[m+1],pathDuration);
 							}
 						}
 						if(pathDuration < compare) {
@@ -528,9 +541,12 @@ public class Main_Construction {
 			for(int m = 0; m < step;m++) {
 				// for Melgarejo
 				if (pathDuration/durationTimeStep >= nbTimeSteps) {
-					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][nbTimeSteps -1];
+					//pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][nbTimeSteps-1];
+					pathDuration += getFIFOTravellingTime(bestPath[m],bestPath[m+1],nbTimeSteps-1);
 				} else {
-					pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][(int) (pathDuration/durationTimeStep)];
+					//pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][(int) (pathDuration/durationTimeStep)];
+					pathDuration += getFIFOTravellingTime(bestPath[m],bestPath[m+1],pathDuration);
+
 				}
 			}
 			step++;
@@ -567,8 +583,10 @@ public class Main_Construction {
 				if(savingsPath[j]== depot)
 					cycleDuration = 0;
 				currentTimestep = (int) (cycleDuration / durationTimeStep);
-				totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
-				cycleDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+				//totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+				//cycleDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
+				totalDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
+				cycleDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
 			}
 			while(savingsPath.length > cities.length + 1) {
 				bestResult = 999999;
@@ -623,8 +641,11 @@ public class Main_Construction {
 								if(helperPath[m]==depot)
 									cycleDuration = 0;
 								currentTimestep = (int) (cycleDuration / durationTimeStep);
-								totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
-								cycleDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
+								// totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
+								// cycleDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
+								totalDuration += getFIFOTravellingTime(helperPath[m],helperPath[m + 1],cycleDuration);
+								cycleDuration += getFIFOTravellingTime(helperPath[m],helperPath[m + 1],cycleDuration);
+
 							}
 
 							//System.out.println(Arrays.toString(helperPath) + " total duration: "+ totalDuration);
@@ -731,42 +752,27 @@ public class Main_Construction {
 	
 	// Only for Melegarejo permutation
     static void permute(java.util.List<Integer> arr, int k){
-    	int[] solutionMelgarejo = {190, 81, 32, 9, 132, 240, 74, 127, 150};
         for(int i = k; i < arr.size(); i++){
             java.util.Collections.swap(arr, i, k);
             permute(arr, k+1);
             java.util.Collections.swap(arr, k, i);
         }
         if (k == arr.size() -1){
-            //System.out.println(java.util.Arrays.toString(arr.toArray()));
-            for(int m = 1;m < solutionMelgarejo.length;m++) {
-            	solutionMelgarejo[m] = arr.get(m);
-            }
-            
-            duplicate = false;
-            for(int m = 0;m<solutionMelgarejo.length;m++) {
-                for(int n = 0;n<solutionMelgarejo.length;n++) {
-                	if(m!=n && solutionMelgarejo[m] == solutionMelgarejo[n]) {
-                		duplicate = true;
-                	}
-                }
-            }
-            if(!duplicate) {
-        		double TtotalDuration = 0;
-        		int TcurrentTimestep = 0;
-        		TtotalDuration = distanceFct[222][solutionMelgarejo[0]][0];
-        		for(int j = 0; j < solutionMelgarejo.length -1; j++) {
-        			TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
-        			TtotalDuration += distanceFct[solutionMelgarejo[j]][solutionMelgarejo[j + 1]][TcurrentTimestep];
-        			//System.out.println("from: " + solutionMelgarejo[j] + " to: "+ solutionMelgarejo[j + 1] + " in Timestep: " + TcurrentTimestep + " takes " + distanceFct[solutionMelgarejo[j]][solutionMelgarejo[j + 1]][TcurrentTimestep]);
-        		}
-        		TcurrentTimestep = (int) (TtotalDuration / durationTimeStep);
-        		TtotalDuration += distanceFct[solutionMelgarejo[solutionMelgarejo.length-1]][222][TcurrentTimestep];
-        		if(TtotalDuration < bestDuration) {
-        			bestDuration = TtotalDuration;
-        			System.out.println("New best duration: " + bestDuration);
-        			System.out.println("222 " + Arrays.toString(solutionMelgarejo) + " 222");
-        		}
+            //counter++;
+            //System.out.println(java.util.Arrays.toString(arr.toArray()) + " "+ counter);
+            	
+    		double tTotalDuration = 0;
+    		tTotalDuration = getFIFOTravellingTime(222,arr.get(0),0);
+    		for(int j = 0; j < arr.size() -1; j++) {
+    			tTotalDuration += getFIFOTravellingTime(arr.get(j),arr.get(j+1),tTotalDuration);
+    		}
+			tTotalDuration += getFIFOTravellingTime(arr.get(arr.size()-1),222,tTotalDuration);
+
+    		if(tTotalDuration < bestDuration) {
+    			bestDuration = tTotalDuration;
+    			System.out.println("New best duration: " + bestDuration);
+    			System.out.println("222 " + Arrays.toString(arr.toArray()) + " 222");
+    		
             }
         }
         //System.out.println("Final best duration: " + bestDuration);
@@ -824,8 +830,8 @@ public class Main_Construction {
 		return distanceFct[i][j][s];
 	}
 	
-	public static double getFIFOTravellingTime(int i, int j, int time) {
-			return FIFODistanceFct[i][j][time/durationTimeStep].getCost(time);
+	public static double getFIFOTravellingTime(int i, int j, double time) {
+			return FIFODistanceFct[i][j][(int) (time/durationTimeStep)].getCost(time);
 
 	}
 }
