@@ -73,9 +73,7 @@ public class DataReading {
 			for(int j = 0;j<3;j++) {
 				for(int t = 0;t<3;t++) {
 					speed[t][j] = file.nextDouble();
-					System.out.print(speed[t][j] +" ");
 				}
-				System.out.println();
 			}
 			for (int i=0;i< 9; i++) {
 				file.nextLine();
@@ -204,4 +202,34 @@ public class DataReading {
 		return null;
 		
 	}
+	
+	/*
+	// Data read own
+	try {
+		file = new Scanner(new File(fileName));
+		file.useLocale(Locale.US);
+		nbLocations = file.nextInt();		
+		nbTimeSteps = file.nextInt();
+		durationTimeStep = file.nextInt();
+		distanceFct = new int[nbLocations][nbLocations][nbTimeSteps];
+		
+		for(int s=0;s<nbTimeSteps;s++) {
+			for(int i=0;i<nbLocations;i++) {
+				for(int j=0;j<nbLocations;j++) {
+					distanceFct[i][j][s]=file.nextInt();
+					
+					while(distanceFct[i][j][s] == 0){
+						distanceFct[i][j][s]=file.nextInt();
+					}
+					if (distanceFct[i][j][s] == 0) {
+						distanceFct[i][j][s] = 9999;
+
+				}
+			}
+		}
+		file.close();
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+	}
+	*/
 }

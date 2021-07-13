@@ -69,20 +69,24 @@ public class Main_Construction {
 			nbLocations = dataReading.getnbLocations();
 			nbTimeSteps = dataReading.getnbTimeSteps();
 			durationTimeStep = dataReading.getdurationTimeStep();
-				
+			setFIFODistanceFct();	
 						
 			// Compare with given results from Cordeau
-			
 			int[] solutionCordeau = {0, 6 ,15 ,14, 3 ,1 ,11, 8, 2, 12, 4 ,7, 9, 13 ,10, 5, 0};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
 				tCurrentTimestep = (int) (tTotalDuration / durationTimeStep);
 				tTotalDuration += distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep];
-				System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
+				//System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
 			}
 			System.out.println("total duration: " + tTotalDuration);
-						
+			
+			tTotalDuration = 0;
+			for(int k = 0; k < solutionCordeau.length -1; k++) {
+				tTotalDuration += getFIFOTravellingTime(solutionCordeau[k],solutionCordeau[k + 1],tTotalDuration);
+			}
+			System.out.println("total duration: " + tTotalDuration);
 			// General TD-TSP
 			cities = new int[nbLocations-1];
 			for(int i=0;i<nbLocations-1;i++) {
@@ -98,10 +102,9 @@ public class Main_Construction {
 			doSavingsAlgo();
 			doChristofidesAlgorithm();
 		}
-		
 		*/
 		
-		
+
 		// Melgarejo
 		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileName);
@@ -134,7 +137,6 @@ public class Main_Construction {
 		
 		for(String name : stringListOfFiles) {
 			System.out.println(name);
-			// !!! better way to do this?
 			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 			dataReading = new DataReading(fileName);
 			distanceFct = dataReading.getDistanceFctMelgarejo();
@@ -149,14 +151,12 @@ public class Main_Construction {
 			}
 			file.close();
 			
-			//System.out.println(distanceFct[222][240][0]);
 			for(int i = 0;i<cities.length;i++)
 				for(int j = 0;j<serviceTime.length;j++) 
 					for(int t = 0;t<nbTimeSteps;t++) 
 						distanceFct[cities[i]][cities[j]][t] +=serviceTime[j];
 			
 			// include FIFO
-			
 			setFIFODistanceFct();			
 			//System.out.println(distanceFct[0][1][10] + "  " + getFIFOTravellingTime(0, 1,3955));
 			
@@ -169,12 +169,15 @@ public class Main_Construction {
 			doNearestInsertion();
 			doSavingsAlgo();
 			//doChristofidesAlgorithm();
-			
+
 			// Compare with results from instances
 			counter = 0;
-			permute(java.util.Arrays.asList(190,81,32,9,132,240 ,74 ,127, 150),0);
-		
-			int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			//permute(java.util.Arrays.asList(190,81,32,9,132,240 ,74 ,127, 150),0);
+			
+			// best solution from permutation for 10_1
+			// int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			// 10_12 for savings
+			int[] solution = {35, 120, 112, 68, 70, 210, 208, 149, 147, 150, 35};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solution.length -1; k++) {
@@ -183,7 +186,13 @@ public class Main_Construction {
 				//System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
 			}
 			System.out.println("total duration: " + tTotalDuration);
-		
+			
+			tTotalDuration = 0;
+			for(int k = 0; k < solution.length -1; k++) {
+				tTotalDuration += getFIFOTravellingTime(solution[k],solution[k + 1],tTotalDuration);
+			}
+			System.out.println("total duration with FIFO: " + tTotalDuration);
+
 		}
 		
 		
@@ -273,36 +282,6 @@ public class Main_Construction {
 			doSavingsAlgo();
 			doChristofidesAlgorithm();
 			
-		}
-		*/
-		
-		/*
-		// Data read own
-		try {
-			file = new Scanner(new File(fileName));
-			file.useLocale(Locale.US);
-			nbLocations = file.nextInt();		
-			nbTimeSteps = file.nextInt();
-			durationTimeStep = file.nextInt();
-			distanceFct = new int[nbLocations][nbLocations][nbTimeSteps];
-			
-			for(int s=0;s<nbTimeSteps;s++) {
-				for(int i=0;i<nbLocations;i++) {
-					for(int j=0;j<nbLocations;j++) {
-						distanceFct[i][j][s]=file.nextInt();
-						
-						while(distanceFct[i][j][s] == 0){
-							distanceFct[i][j][s]=file.nextInt();
-						}
-						if (distanceFct[i][j][s] == 0) {
-							distanceFct[i][j][s] = 9999;
-
-					}
-				}
-			}
-			file.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		}
 		*/
 	}
@@ -583,8 +562,6 @@ public class Main_Construction {
 				if(savingsPath[j]== depot)
 					cycleDuration = 0;
 				currentTimestep = (int) (cycleDuration / durationTimeStep);
-				//totalDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
-				//cycleDuration += distanceFct[savingsPath[j]][savingsPath[j + 1]][currentTimestep];
 				totalDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
 				cycleDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
 			}
@@ -688,6 +665,7 @@ public class Main_Construction {
 		// transform matrix
 		double[][] distanceFctTimeindependent = new double[nbLocations][nbLocations];
 		
+		// Get average
 		for(int i = 0;i<nbLocations;i++) {
 			for(int j = 0;j<nbLocations;j++) {
 				for(int t = 0;t<nbTimeSteps;t++) {
@@ -706,11 +684,26 @@ public class Main_Construction {
 			}
 		}
 		
+		// Get median for distanceFct
+		
+		for(int i = 0;i<nbLocations;i++) {
+			for(int j = 0;j<nbLocations;j++) {
+				double[] listMedian = new double[nbTimeSteps*2];
+				for(int t = 0;t<nbTimeSteps;t++) {
+					listMedian[t] = distanceFct[i][j][t];
+					listMedian[t+nbTimeSteps] = distanceFct[j][i][t];
+				}
+				Arrays.sort(listMedian);
+				distanceFctTimeindependent[i][j] = (listMedian[nbTimeSteps] + listMedian[nbTimeSteps+1])/2;
+				//System.out.println(Arrays.toString(listMedian) + " " + distanceFctTimeindependent[i][j]);
+			}
+		}
+		
 		for(int i = 0;i<nbLocations;i++) {
 			//System.out.println(Arrays.toString(distanceFctTimeindependent[i]));
 		}
-		// calculate minimum spanning tree (Kruskal)
 		
+		// calculate minimum spanning tree (Kruskal)
 		int[] mst = new int[cities.length];
 		int[] mstIn = new int[cities.length];
 		Arrays.fill(mst, -1);
@@ -722,33 +715,53 @@ public class Main_Construction {
 					if(distanceFctTimeindependent[i][j] < compare && i !=j) {
 						boolean duplicate = false;
 						for(int m = 0;m<k+1;m++) {
-							if(mst[m] == j) {
-								duplicate = true;
+							if(mst[m] == j ||mstIn[m] == j && mst[m] ==i ||mstIn[m] == i && mst[m] ==j) {
+									duplicate = true;
 							}
 						}
 						
 						if(!duplicate){
 							compare = distanceFctTimeindependent[i][j];
-							if(k == 0)
+							if(k == 0) {
 								mst[k] = i;
+								mstIn[k] = -1;
+							}
 							mst[k+1] = j; 
 							mstIn[k+1] = i;
 						}
 					}
 				}
 			}
-			// ??? Add to graph?? or store differently?	
 		}
-		//System.out.println(Arrays.toString(mst));
-		//System.out.println(Arrays.toString(mstIn));
+		System.out.println(Arrays.toString(mst));
+		System.out.println(Arrays.toString(mstIn));
 		
-		// calculate odd degree vertices (Floyd-Warshall)
+		// calculate nb of odd degree vertices
+		counter = 0;
+		for(int i = 0               ;i<mst.length;i++) {
+			int helpCounter = 0;
+			for(int j = 1;j<mst.length;j++) {
+				if(cities[i] == mst[j]) 
+					helpCounter++;
+				if(cities[i] == mstIn[j]) 
+					helpCounter++;
+			}
+			if(helpCounter%2 == 1) {
+				counter++;
+			}
+		}
+		System.out.println(counter);
+		int[] perfectMatching = new int[counter];
+		
+		doPerfectMatchingPermutation();
 		
 		//
 	}
 	LocalTime timeStart = LocalTime.now();
 	
-	
+	static void doPerfectMatchingPermutation() {
+		
+	}
 	
 	// Only for Melegarejo permutation
     static void permute(java.util.List<Integer> arr, int k){
@@ -831,7 +844,11 @@ public class Main_Construction {
 	}
 	
 	public static double getFIFOTravellingTime(int i, int j, double time) {
+		if(time/durationTimeStep > nbTimeSteps-1) {
+			return FIFODistanceFct[i][j][nbTimeSteps-1].getCost(time);
+		} else {
 			return FIFODistanceFct[i][j][(int) (time/durationTimeStep)].getCost(time);
 
+		}
 	}
 }
