@@ -33,6 +33,7 @@ public class Main_Construction {
 	static double bestDuration = 999999;
 	static String[] stringListOfFiles;
 	static int counter;
+	static boolean isCordeau = false;
 	
 	//from FIFO
 	private static FIFOTimeStep[][][] FIFODistanceFct;
@@ -40,9 +41,9 @@ public class Main_Construction {
 	
 	public static void main(String[]args) throws FileNotFoundException {
 
-		/*
+
 		// Cordeau
-		
+		isCordeau = true;
 		int[] numbersCordeau = {15,20,25,30,35,40};
 		int counter = 0;
 		stringListOfFiles = new String[6*30];
@@ -100,11 +101,12 @@ public class Main_Construction {
 			doNearestNeighbor();
 			doNearestInsertion();
 			doSavingsAlgo();
-			doChristofidesAlgorithm();
+			//doChristofidesAlgorithm();
 		}
-		*/
+		isCordeau = false;
 		
-
+		
+		/*
 		// Melgarejo
 		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileName);
@@ -175,17 +177,17 @@ public class Main_Construction {
 			//permute(java.util.Arrays.asList(190,81,32,9,132,240 ,74 ,127, 150),0);
 			
 			// best solution from permutation for 10_1
-			// int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
 			// 10_12 for savings
-			int[] solution = {35, 120, 112, 68, 70, 210, 208, 149, 147, 150, 35};
+			//int[] solution = {35, 120, 112, 68, 70, 210, 208, 149, 147, 150, 35};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solution.length -1; k++) {
 				tCurrentTimestep = (int) (tTotalDuration / durationTimeStep);
 				tTotalDuration += distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep];
-				//System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
+				System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
 			}
-			System.out.println("total duration: " + tTotalDuration);
+			System.out.println("total duration without FIFO: " + tTotalDuration);
 			
 			tTotalDuration = 0;
 			for(int k = 0; k < solution.length -1; k++) {
@@ -194,7 +196,7 @@ public class Main_Construction {
 			System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
-		
+		*/
 		
 		/*
 		// Rifki
@@ -844,11 +846,25 @@ public class Main_Construction {
 	}
 	
 	public static double getFIFOTravellingTime(int i, int j, double time) {
-		if(time/durationTimeStep > nbTimeSteps-1) {
-			return FIFODistanceFct[i][j][nbTimeSteps-1].getCost(time);
+		if(isCordeau) {
+			double partOfWay = 1;
+			double timeInIntervall = 0;
+			double FIFOTravellingTime = 0;
+			while((int)(distanceFct[i][j][(int) (time/durationTimeStep)]*partOfWay + time)/durationTimeStep > (int) time/durationTimeStep ) {
+				timeInIntervall = ((int) (time/durationTimeStep)+1)*durationTimeStep - time;
+				partOfWay -= timeInIntervall / (int)(distanceFct[i][j][(int) (time/durationTimeStep)]);
+				time += timeInIntervall;
+				FIFOTravellingTime += timeInIntervall;
+			}
+			FIFOTravellingTime += partOfWay * distanceFct[i][j][(int) (time/durationTimeStep)];
+			return FIFOTravellingTime;
 		} else {
-			return FIFODistanceFct[i][j][(int) (time/durationTimeStep)].getCost(time);
+			if(time/durationTimeStep > nbTimeSteps-1) {
+				return FIFODistanceFct[i][j][nbTimeSteps-1].getCost(time);
+			} else {
+				return FIFODistanceFct[i][j][(int) (time/durationTimeStep)].getCost(time);
 
+			}
 		}
 	}
 }
