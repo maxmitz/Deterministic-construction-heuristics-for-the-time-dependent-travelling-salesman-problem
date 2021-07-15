@@ -73,6 +73,10 @@ public class DataReading {
 			for(int j = 0;j<3;j++) {
 				for(int t = 0;t<3;t++) {
 					speed[t][j] = file.nextDouble();
+					// Try degeradation of congestion factor
+					if(j==2 && t!=1) {
+						//speed[t][j] = speed[t][j] *0.95;
+					}
 				}
 			}
 			for (int i=0;i< 9; i++) {
@@ -93,7 +97,11 @@ public class DataReading {
 			for(int i = 0;i<this.nbLocations;i++) {
 				for(int j = 0;j<this.nbLocations;j++) {
 					for(int t = 0;t<this.nbTimeSteps;t++) {
-						distanceFct[i][j][t] = distanceFct_Cordeau[i][j] / speed[t][zone[i       ]-1];
+						// Changed that the speed is always the best congestion factor on the way
+						if(distanceFct_Cordeau[i][j] / speed[t][zone[j]-1]< distanceFct_Cordeau[i][j] / speed[t][zone[i]-1])
+							distanceFct[i][j][t] = distanceFct_Cordeau[i][j] / speed[t][zone[j]-1];
+						else
+							distanceFct[i][j][t] = distanceFct_Cordeau[i][j] / speed[t][zone[i]-1];
 					}
 				}
 			}

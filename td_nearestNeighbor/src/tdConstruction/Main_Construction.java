@@ -8,6 +8,8 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -34,6 +36,7 @@ public class Main_Construction {
 	static String[] stringListOfFiles;
 	static int counter;
 	static boolean isCordeau = false;
+	static int[] serviceTime;
 	
 	//from FIFO
 	private static FIFOTimeStep[][][] FIFODistanceFct;
@@ -41,7 +44,7 @@ public class Main_Construction {
 	
 	public static void main(String[]args) throws FileNotFoundException {
 
-
+/*
 		// Cordeau
 		isCordeau = true;
 		int[] numbersCordeau = {15,20,25,30,35,40};
@@ -73,7 +76,10 @@ public class Main_Construction {
 			setFIFODistanceFct();	
 						
 			// Compare with given results from Cordeau
+			//15ANodi_1
 			int[] solutionCordeau = {0, 6 ,15 ,14, 3 ,1 ,11, 8, 2, 12, 4 ,7, 9, 13 ,10, 5, 0};
+			//15CNodi_1
+			//int[] solutionCordeau = {0, 7, 2, 14, 15, 13, 3, 12, 9, 8, 1, 5, 11, 6, 10, 4, 0};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
@@ -81,13 +87,13 @@ public class Main_Construction {
 				tTotalDuration += distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep];
 				//System.out.println("from: " + solutionCordeau[k] + " to: "+ solutionCordeau[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solutionCordeau[k]][solutionCordeau[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
 			}
-			System.out.println("total duration: " + tTotalDuration);
+			System.out.println("total duration without FIFO: " + tTotalDuration);
 			
 			tTotalDuration = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
 				tTotalDuration += getFIFOTravellingTime(solutionCordeau[k],solutionCordeau[k + 1],tTotalDuration);
 			}
-			System.out.println("total duration: " + tTotalDuration);
+			System.out.println("total duration with FIFO: " + tTotalDuration);
 			// General TD-TSP
 			cities = new int[nbLocations-1];
 			for(int i=0;i<nbLocations-1;i++) {
@@ -104,9 +110,9 @@ public class Main_Construction {
 			//doChristofidesAlgorithm();
 		}
 		isCordeau = false;
+		*/
 		
 		
-		/*
 		// Melgarejo
 		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileName);
@@ -145,7 +151,7 @@ public class Main_Construction {
 			file = new Scanner(new File(folderName+name));
 			file.useLocale(Locale.US);
 			cities = new int[file.nextInt()];
-			int[] serviceTime = new int[cities.length];
+			serviceTime = new int[cities.length];
 			for(int i = 0;i<cities.length;i++) {
 				file.nextLine();
 				cities[i] = file.nextInt();
@@ -153,10 +159,7 @@ public class Main_Construction {
 			}
 			file.close();
 			
-			for(int i = 0;i<cities.length;i++)
-				for(int j = 0;j<serviceTime.length;j++) 
-					for(int t = 0;t<nbTimeSteps;t++) 
-						distanceFct[cities[i]][cities[j]][t] +=serviceTime[j];
+			
 			
 			// include FIFO
 			setFIFODistanceFct();			
@@ -177,26 +180,30 @@ public class Main_Construction {
 			//permute(java.util.Arrays.asList(190,81,32,9,132,240 ,74 ,127, 150),0);
 			
 			// best solution from permutation for 10_1
-			int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			//int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			//int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
+			
+			int[] solution = {0,4,5,8,9,1,3,7,2,6,0};
+			
 			// 10_12 for savings
 			//int[] solution = {35, 120, 112, 68, 70, 210, 208, 149, 147, 150, 35};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solution.length -1; k++) {
 				tCurrentTimestep = (int) (tTotalDuration / durationTimeStep);
-				tTotalDuration += distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep];
-				System.out.println("from: " + solution[k] + " to: "+ solution[k + 1] + " in Timestep: " + tCurrentTimestep + " takes " + distanceFct[solution[k]][solution[k + 1]][tCurrentTimestep] + " total " + tTotalDuration );
+				tTotalDuration += distanceFct[cities[solution[k]]][cities[solution[k + 1]]][tCurrentTimestep] + serviceTime[solution[k]];
 			}
 			System.out.println("total duration without FIFO: " + tTotalDuration);
-			
+
 			tTotalDuration = 0;
 			for(int k = 0; k < solution.length -1; k++) {
 				tTotalDuration += getFIFOTravellingTime(solution[k],solution[k + 1],tTotalDuration);
+				//System.out.println(tTotalDuration + " arc travel time without service time " + serviceTime[solution[k+1]]);
 			}
 			System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
-		*/
+		
 		
 		/*
 		// Rifki
@@ -314,20 +321,19 @@ public class Main_Construction {
 			totalDuration = 0;
 			for(int k = 0; k < cities.length -1; k++) {
 				currentTimestep = (int) (totalDuration / durationTimeStep);
-				// for Melgarejo
+				// for Cordeau
 				if(currentTimestep > nbTimeSteps -1) {
 					currentTimestep = nbTimeSteps -1;
 				}
 				// totalDuration += distanceFct[cities[k]][cities[k + 1]][currentTimestep];
-				totalDuration += getFIFOTravellingTime(cities[k],cities[k+1],totalDuration);
+				totalDuration += getFIFOTravellingTime(k,k+1,totalDuration);
 			}
 			currentTimestep = (int) (totalDuration / durationTimeStep);
 			// for Cordeau
 			if(currentTimestep > nbTimeSteps -1) {
 				currentTimestep = nbTimeSteps -1;
 			}
-			//totalDuration += distanceFct[cities[cities.length -1]][cities[0]][currentTimestep];
-			totalDuration += getFIFOTravellingTime(cities[cities.length -1],cities[0],totalDuration);
+			totalDuration += getFIFOTravellingTime(cities.length -1,0,totalDuration);
 
 			if(bestResult > totalDuration) {
 				bestResult = totalDuration;
@@ -369,103 +375,75 @@ public class Main_Construction {
 	public static void doNearestNeighbor() {
 		LocalTime timeStart = LocalTime.now();
 		System.out.println("Nearest neighbor algorithm");
-		Arrays.fill(tspPath, -1);
-		int startingCity;
 		double neighborTime;
 		bestResult = 999999;
-
-		//change to l<cities.length to treat every vertex as possible depot
-		for(int l = 0; l < 1; l ++) {
-			startingCity = cities[l];
-			Arrays.fill(tspPath, -1);
-			tspPath[0] = cities[l];
-			tspPath[tspPath.length - 1] = cities[l];
-			step = 1;
-			totalDuration = 0;
-			
-			while (step < cities.length) {
-				neighborTime = 99999;
-				currentTimestep = (int) (totalDuration / durationTimeStep);
-				for (int j = 0; j < cities.length; j++ ) {
-					duplicate = false;
-					for (int k = 0; k < tspPath.length; k++) {
-						if (cities[j] == tspPath[k]) {
-							duplicate = true;
-						}
-					}
-					//if (distanceFct[startingCity][cities[j]][currentTimestep] < neighborTime && !duplicate) {
-					if (getFIFOTravellingTime(startingCity,cities[j],totalDuration) < neighborTime && !duplicate){;
-						tspPath[step] = cities[j];
-						//neighborTime = distanceFct[startingCity][cities[j]][currentTimestep];
-						neighborTime= getFIFOTravellingTime(startingCity,cities[j],totalDuration);
-
-					}
-				}
-				//totalDuration += distanceFct[startingCity][tspPath[step]][currentTimestep];
-				totalDuration += getFIFOTravellingTime(startingCity,tspPath[step],totalDuration);
-				startingCity = tspPath[step];
-				step++;
-			}
-			currentTimestep = (int) (totalDuration / durationTimeStep);
-			//totalDuration += distanceFct[tspPath[tspPath.length-2]][tspPath[tspPath.length-1]][currentTimestep];
-			totalDuration += getFIFOTravellingTime(tspPath[tspPath.length-2],tspPath[tspPath.length-1],totalDuration);
-			//System.out.println(Arrays.toString(tspPath)+ "total duration: " + totalDuration + ", current Timestep: " + currentTimestep);
-			if(totalDuration < bestResult) {
-				bestResult = totalDuration;
-				for(int i = 0;i<bestResultPath.length;i++) {
-					bestResultPath[i] = tspPath[i];
-				}
-			}
+		int[] tspPathSolution = new int[tspPath.length];
+		tspPath[0] = 0;
+		tspPath[tspPath.length - 1] = 0;
+		tspPathSolution[0] = cities[0];
+		tspPathSolution[tspPath.length - 1] = cities[0];
+		
+		totalDuration = 0;
+		List<Integer> remainingCities = new LinkedList<>();
+		for(int i = 1;i<cities.length;i++) {
+			remainingCities.add(i);
 		}
-		System.out.println(Arrays.toString(bestResultPath)+ " objective value: " + bestResult);
+		
+		for(int i = 1;i<cities.length;i++) {
+			neighborTime = 99999;
+			List<Integer> nextCity = new LinkedList<>();
+			for(int j : remainingCities) {
+				if (getFIFOTravellingTime(0,j,totalDuration) < neighborTime){;
+					tspPath[i] = j;
+					tspPathSolution[i] = cities[j];
+					neighborTime = getFIFOTravellingTime(0,j,totalDuration);
+				}
+			}
+			nextCity.add(tspPath[i]);
+			remainingCities.removeAll(nextCity);
+			totalDuration += getFIFOTravellingTime(tspPath[i-1],tspPath[i],totalDuration);
+		}
+		totalDuration += getFIFOTravellingTime(tspPath[tspPath.length-2],tspPath[tspPath.length-1],totalDuration);
+
+		System.out.println(Arrays.toString(tspPathSolution)+ " objective value: " + totalDuration);
 
 		LocalTime timeEnd = LocalTime.now();
-		
 		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos() /1000;
-		saveInCSV(fileName,"Nearest neighbor algorithm",bestResult,bestResultPath,computingTime);
+		saveInCSV(fileName,"Nearest neighbor algorithm",bestResult,tspPath,computingTime);
 	}
 	
 	public static void doNearestInsertion() {
 		System.out.println("Nearest insertion algorithm");
 		LocalTime timeStart = LocalTime.now();
-		Arrays.fill(tspPath, -1);
+		int[] tspPathSolution = new int[tspPath.length];
 		double compare = 99999;
 		totalDuration = 0;
 		currentTimestep = 0;
-		// find first insertion
-		//change to i < cities.length to treat every vertex as possible depot
-		for(int i = 0; i < 1; i++) 
-			for(int j = 0; j < cities.length; j++)
-				if(i != j) {
-					//if(distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)] < compare) {
-					if(getFIFOTravellingTime(cities[i],cities[j],totalDuration) + getFIFOTravellingTime(cities[j],cities[i],totalDuration) < compare) {	
-						tspPath[0] = cities[i];
-						tspPath[1] = cities[j];
-						tspPath[2] = cities[i];
-						//compare = distanceFct[cities[i]][cities[j]][currentTimestep] + distanceFct[cities[j]][cities[i]][(int) (distanceFct[cities[i]][cities[j]][currentTimestep]/durationTimeStep)];
-						compare = getFIFOTravellingTime(cities[i],cities[j],totalDuration) + getFIFOTravellingTime(cities[j],cities[i],totalDuration);
+		for(int j = 0; j < cities.length; j++)
+				if(0 != j) {
+					if(getFIFOTravellingTime(0,j,totalDuration) + getFIFOTravellingTime(j,0,totalDuration) < compare) {	
+						tspPath[0] = 0;
+						tspPath[1] = j;
+						tspPath[2] = 0;
+						tspPathSolution[0] = cities[0];
+						tspPathSolution[1] = cities[j];
+						tspPathSolution[2] = cities[0];
+						compare = getFIFOTravellingTime(0,j,totalDuration) + getFIFOTravellingTime(j,0,totalDuration);
 					}
 				}
 		
 		totalDuration = compare;
 		step = 2;		
-		// flexible duration calculation
 		double pathDuration = 0;
-		
 		for(int i = 0; i < step;i++) {
-			//pathDuration += distanceFct[tspPath[i]][tspPath[i+1]][(int) (pathDuration/durationTimeStep)];
 			pathDuration += getFIFOTravellingTime(tspPath[i],tspPath[i+1],pathDuration);
 		}
 		
-		// try second insertion
-		
+		// following insertions
 		int[] testPath = new int[tspPath.length];
 		int[] bestPath = new int[tspPath.length];
-		Arrays.fill(testPath, -1);
-		Arrays.fill(bestPath, -1);
 		double bestDuration = 0;
 		
-		//Changed to tspPath-1
 		while(step < tspPath.length) {
 			//change to i = 0 to treat every vertex as possible depot
 			for(int i = 1; i <= step; i++) {
@@ -476,31 +454,22 @@ public class Main_Construction {
 					}
 					// Check for duplicate
 					duplicate = false;
-					
 					for(int n = 0; n <= step; n++) 
-						if(cities[j] == testPath[n]) 
+						if(j == testPath[n]) 
 							duplicate = true;
 					
 					if(!duplicate){
-						if(i == 0) {
-							// insert at start and step + 1 and see if it is shorter than compare
-							testPath[0] = cities[j];
-							testPath[step+1] = cities[j];
-						} else {
-							for(int l = step; l >= i; l--) {
-								testPath[l+1] = testPath[l];
-							}
-							testPath[i] = cities[j];
-							testPath[step+1] = testPath[0];
+						for(int l = step; l >= i; l--) {
+							testPath[l+1] = testPath[l];
 						}
+						testPath[i] = j;
+						testPath[step+1] = testPath[0];
 						pathDuration = 0;
 						for(int m = 0; m <= step;m++) {
 							// for Melgarejo
 							if (pathDuration/durationTimeStep >= nbTimeSteps) {
-								//pathDuration += distanceFct[testPath[m]][testPath[m+1]][nbTimeSteps-1];
 								pathDuration += getFIFOTravellingTime(testPath[m],testPath[m+1],nbTimeSteps-1);
 							} else {
-								//pathDuration += distanceFct[testPath[m]][testPath[m+1]][(int) (pathDuration/durationTimeStep)];
 								pathDuration += getFIFOTravellingTime(testPath[m],testPath[m+1],pathDuration);
 							}
 						}
@@ -522,17 +491,17 @@ public class Main_Construction {
 			for(int m = 0; m < step;m++) {
 				// for Melgarejo
 				if (pathDuration/durationTimeStep >= nbTimeSteps) {
-					//pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][nbTimeSteps-1];
 					pathDuration += getFIFOTravellingTime(bestPath[m],bestPath[m+1],nbTimeSteps-1);
 				} else {
-					//pathDuration += distanceFct[bestPath[m]][bestPath[m+1]][(int) (pathDuration/durationTimeStep)];
 					pathDuration += getFIFOTravellingTime(bestPath[m],bestPath[m+1],pathDuration);
 
 				}
 			}
 			step++;
 		}
-		System.out.println(Arrays.toString(bestPath) + " objective value: " + bestDuration);
+		for(int i = 0;i<tspPath.length;i++)
+			tspPathSolution[i] = cities[bestPath[i]];
+		System.out.println(Arrays.toString(tspPathSolution) + " objective value: " + bestDuration);
 		LocalTime timeEnd = LocalTime.now();
 		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
 		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,bestPath,computingTime);
@@ -541,124 +510,103 @@ public class Main_Construction {
 	static void doSavingsAlgo() {
 		LocalTime timeStart = LocalTime.now();
 		System.out.println("Savings Algorithm");
-		int[] bestPathAllIterations = new int[cities.length +1];
-		double bestTimeAllIterations = Double.MAX_VALUE;
-		int[] depotzero = {cities[0]};
-		for(int depot : depotzero) {
-			int[] savingsPath = new int[cities.length + cities.length-1];
-			int counter = 0;
-			savingsPath[0]= depot;
-			for(int i = 1;i<savingsPath.length-1;i+=2){
-				if(cities[counter] != depot) {
-					savingsPath[i] = cities[counter];
-					savingsPath[i+1] = depot;
-				} else {
-					i -= 2;
-				}
-				counter++;
-			}
-			double totalDuration = 0;
-			double cycleDuration = 0;
-			int currentTimestep = 0;
-			for(int j = 0; j < savingsPath.length -1; j++) {
-				if(savingsPath[j]== depot)
-					cycleDuration = 0;
-				currentTimestep = (int) (cycleDuration / durationTimeStep);
-				totalDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
-				cycleDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
-			}
-			while(savingsPath.length > cities.length + 1) {
-				bestResult = 999999;
-				int[] helperCycle;
-				int[] helperPath = new int[savingsPath.length -1];
-				//find best saving and insert
-				for(int i=0;i<helperPath.length;i++){
-					if(savingsPath[i] == depot) {
-						int j = i + 1;
-						counter = 0;
-						while(savingsPath[j] != depot) {
+		int[] savingsPath = new int[cities.length + cities.length-1];
+		int counter = 0;
+		savingsPath[0]= 0;
+		for(int i = 1;i<savingsPath.length-1;i+=2){
+			savingsPath[i] = counter;
+			savingsPath[i+1] = 0;
+			counter++;
+		}
+		double totalDuration = 0;
+		double cycleDuration = 0;
+		for(int j = 0; j < savingsPath.length -1; j++) {
+			if(savingsPath[j]== 0)
+				cycleDuration = 0;
+			totalDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
+			cycleDuration += getFIFOTravellingTime(savingsPath[j],savingsPath[j + 1],cycleDuration);
+		}
+		while(savingsPath.length > cities.length + 1) {
+			bestDuration = 999999;
+			int[] helperCycle;
+			int[] helperPath = new int[savingsPath.length -1];
+			for(int i=0;i<helperPath.length;i++){
+				if(savingsPath[i] == 0) {
+					int j = i + 1;
+					counter = 0;
+					while(savingsPath[j] != 0) {
+						counter++;
+						j++;
+					}
+					helperCycle = new int[counter];
+					for(int m= i+1;m<j;m++) {
+						helperCycle[m-i-1] = savingsPath[m];
+					}
+					
+					counter = 0;
+					// copy array without detected cycle
+					Arrays.fill(helperPath, 0);
+					
+					for(int m = 0;m<savingsPath.length;m++) {
+						if(m<i || m > i + helperCycle.length) {
+							helperPath[counter] = savingsPath[m];
 							counter++;
-							j++;
-						}
-						helperCycle = new int[counter];
-						for(int m= i+1;m<j;m++) {
-							helperCycle[m-i-1] = savingsPath[m];
-						}
-						
-						counter = 0;
-						// copy array without detected cycle
-						Arrays.fill(helperPath, depot);
-						
-						for(int m = 0;m<savingsPath.length;m++) {
-							if(m<i || m > i + helperCycle.length) {
-								helperPath[counter] = savingsPath[m];
-								counter++;
-							}
-						}
-						
-						// Insert at every position + evaluate (not first + not last spot)
-						int[] helperHelperPath = new int[helperPath.length];
-						for(int m=0;m<helperPath.length;m++) {
-							helperHelperPath[m] = helperPath[m];
-						}
-						for(int indexPosition = 1;indexPosition < helperPath.length-1-helperCycle.length;indexPosition++) {
-							for(int m=0;m<helperPath.length;m++) {
-								helperPath[m] = helperHelperPath[m];
-							}
-							for(int m=helperPath.length-1; m > indexPosition && m > helperCycle.length; m--){
-								helperPath[m] = helperPath[m-helperCycle.length];
-							}
-							for(int n=0;n<helperCycle.length;n++) {
-								helperPath[indexPosition + n] = helperCycle[n]; 
-							}
-							
-							//Calculate total duration
-							totalDuration = 0;
-							cycleDuration = 0;
-							currentTimestep = 0;
-							for(int m = 0; m < helperPath.length -1; m++) {
-								if(helperPath[m]==depot)
-									cycleDuration = 0;
-								currentTimestep = (int) (cycleDuration / durationTimeStep);
-								// totalDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
-								// cycleDuration += distanceFct[helperPath[m]][helperPath[m + 1]][currentTimestep];
-								totalDuration += getFIFOTravellingTime(helperPath[m],helperPath[m + 1],cycleDuration);
-								cycleDuration += getFIFOTravellingTime(helperPath[m],helperPath[m + 1],cycleDuration);
-
-							}
-
-							//System.out.println(Arrays.toString(helperPath) + " total duration: "+ totalDuration);
-														
-	 						if (bestResult > totalDuration) {
-								bestResult = totalDuration;
-								bestResultPath = new int[helperPath.length];
-								for(int m=0;m<bestResultPath.length;m++) {
-									bestResultPath[m] = helperPath[m];
-								}
-							}
-
 						}
 					}
-				}
-				savingsPath = new int[bestResultPath.length];
-				for(int m = 0;m <savingsPath.length;m++) {
-					savingsPath[m] = bestResultPath[m];
+					
+					// Insert at every position + evaluate (not first + not last spot)
+					int[] helperHelperPath = new int[helperPath.length];
+					for(int m=0;m<helperPath.length;m++) {
+						helperHelperPath[m] = helperPath[m];
+					}
+					for(int indexPosition = 1;indexPosition < helperPath.length-1-helperCycle.length;indexPosition++) {
+						for(int m=0;m<helperPath.length;m++) {
+							helperPath[m] = helperHelperPath[m];
+						}
+						for(int m=helperPath.length-1; m > indexPosition && m > helperCycle.length; m--){
+							helperPath[m] = helperPath[m-helperCycle.length];
+						}
+						for(int n=0;n<helperCycle.length;n++) {
+							helperPath[indexPosition + n] = helperCycle[n]; 
+						}
+						
+						//Calculate total duration
+						totalDuration = 0;
+						cycleDuration = 0;
+						for(int m = 0; m < helperPath.length -1; m++) {
+							if(helperPath[m]==0)
+								cycleDuration = 0;
+							totalDuration += getFIFOTravellingTime(helperPath[m],helperPath[m + 1],cycleDuration);
+							cycleDuration += getFIFOTravellingTime(helperPath[m],helperPath[m + 1],cycleDuration);
+
+						}
+						
+ 						if (totalDuration < bestDuration) {
+							bestDuration = totalDuration;
+							bestResultPath = new int[helperPath.length];
+							for(int m=0;m<bestResultPath.length;m++) {
+								bestResultPath[m] = helperPath[m];
+							}
+						}
+
+					}
 				}
 			}
-			//System.out.println(Arrays.toString(bestResultPath) + " total duration: " + bestResult);
-			if (bestResult < bestTimeAllIterations) {
-				bestTimeAllIterations = bestResult;
-				for(int m=0;m<bestResultPath.length;m++) {
-					bestPathAllIterations[m] = bestResultPath[m];
-				}
+			savingsPath = new int[bestResultPath.length];
+			for(int m = 0;m <savingsPath.length;m++) {
+				savingsPath[m] = bestResultPath[m];
 			}
-		// Compare overall
 		}
-		System.out.println(Arrays.toString(bestPathAllIterations) + " objective value: "+ bestTimeAllIterations);
+		
+		for(int i = 0;i< bestResultPath.length;i++) {
+			bestResultPath[i] = cities[bestResultPath[i]];
+		}
+		// Compare overall
+		System.out.println(Arrays.toString(bestResultPath) + " objective value: "+ bestDuration);
 		LocalTime timeEnd = LocalTime.now();
 		
 		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
-		saveInCSV(fileName,"Savings algorithm",bestTimeAllIterations,bestPathAllIterations,computingTime);
+		saveInCSV(fileName,"Savings algorithm",bestDuration,bestResultPath,computingTime);
 		
 	}
 	
@@ -697,7 +645,6 @@ public class Main_Construction {
 				}
 				Arrays.sort(listMedian);
 				distanceFctTimeindependent[i][j] = (listMedian[nbTimeSteps] + listMedian[nbTimeSteps+1])/2;
-				//System.out.println(Arrays.toString(listMedian) + " " + distanceFctTimeindependent[i][j]);
 			}
 		}
 		
@@ -850,21 +797,17 @@ public class Main_Construction {
 			double partOfWay = 1;
 			double timeInIntervall = 0;
 			double FIFOTravellingTime = 0;
-			while((int)(distanceFct[i][j][(int) (time/durationTimeStep)]*partOfWay + time)/durationTimeStep > (int) time/durationTimeStep ) {
+			while((int)((distanceFct[cities[i]][cities[j]][(int) (time/durationTimeStep)]*partOfWay + time)/durationTimeStep) > (int) (time/durationTimeStep) ) {
 				timeInIntervall = ((int) (time/durationTimeStep)+1)*durationTimeStep - time;
-				partOfWay -= timeInIntervall / (int)(distanceFct[i][j][(int) (time/durationTimeStep)]);
+				partOfWay -= timeInIntervall / (int)(distanceFct[cities[i]][cities[j]][(int) (time/durationTimeStep)]);
 				time += timeInIntervall;
 				FIFOTravellingTime += timeInIntervall;
 			}
-			FIFOTravellingTime += partOfWay * distanceFct[i][j][(int) (time/durationTimeStep)];
+			FIFOTravellingTime += partOfWay * distanceFct[cities[i]][cities[j]][(int) (time/durationTimeStep)];
 			return FIFOTravellingTime;
 		} else {
-			if(time/durationTimeStep > nbTimeSteps-1) {
-				return FIFODistanceFct[i][j][nbTimeSteps-1].getCost(time);
-			} else {
-				return FIFODistanceFct[i][j][(int) (time/durationTimeStep)].getCost(time);
+			return FIFODistanceFct[cities[i]][cities[j]][(int) ((time + serviceTime[i])/durationTimeStep)].getCost(time) + serviceTime[i];
 
-			}
 		}
 	}
 }
