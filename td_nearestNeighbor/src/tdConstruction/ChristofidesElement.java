@@ -1,5 +1,7 @@
 package tdConstruction;
 
+import java.util.Arrays;
+
 public class ChristofidesElement {
 	int vertice;
 	int predecessor;
@@ -243,4 +245,31 @@ for(int l = 0; l < 1; l++) {
     
 
 }
+
+    static void permute(java.util.List<Integer> arr, int k){
+        for(int i = k; i < arr.size(); i++){
+            java.util.Collections.swap(arr, i, k);
+            permute(arr, k+1);
+            java.util.Collections.swap(arr, k, i);
+        }
+        if (k == arr.size() -1){
+            //counter++;
+            //System.out.println(java.util.Arrays.toString(arr.toArray()) + " "+ counter);
+            	
+    		double tTotalDuration = 0;
+    		tTotalDuration = getFIFOTravellingTime(222,arr.get(0),0);
+    		for(int j = 0; j < arr.size() -1; j++) {
+    			tTotalDuration += getFIFOTravellingTime(arr.get(j),arr.get(j+1),tTotalDuration);
+    		}
+			tTotalDuration += getFIFOTravellingTime(arr.get(arr.size()-1),222,tTotalDuration);
+
+    		if(tTotalDuration < bestDuration) {
+    			bestDuration = tTotalDuration;
+    			System.out.println("New best duration: " + bestDuration);
+    			System.out.println("222 " + Arrays.toString(arr.toArray()) + " 222");
+    		
+            }
+        }
+        //System.out.println("Final best duration: " + bestDuration);
+    }
  */     

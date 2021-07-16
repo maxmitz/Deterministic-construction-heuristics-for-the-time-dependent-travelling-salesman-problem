@@ -37,6 +37,10 @@ public class Main_Construction {
 	static int counter;
 	static boolean isCordeau = false;
 	static int[] serviceTime;
+	public static double[][] distanceFctTimeindependent;
+	
+	static List<Integer> mst;
+	static List<Integer> mstIn;
 	
 	//from FIFO
 	private static FIFOTimeStep[][][] FIFODistanceFct;
@@ -173,7 +177,7 @@ public class Main_Construction {
 			doNearestNeighbor();
 			doNearestInsertion();
 			doSavingsAlgo();
-			//doChristofidesAlgorithm();
+			doChristofidesAlgorithm();
 
 			// Compare with results from instances
 			counter = 0;
@@ -181,26 +185,22 @@ public class Main_Construction {
 			
 			// best solution from permutation for 10_1
 			//int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
-			//int[] solution = {222, 9, 132, 127, 150, 190, 32, 81, 74, 240, 222};
 			
 			int[] solution = {0,4,5,8,9,1,3,7,2,6,0};
 			
-			// 10_12 for savings
-			//int[] solution = {35, 120, 112, 68, 70, 210, 208, 149, 147, 150, 35};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solution.length -1; k++) {
 				tCurrentTimestep = (int) (tTotalDuration / durationTimeStep);
 				tTotalDuration += distanceFct[cities[solution[k]]][cities[solution[k + 1]]][tCurrentTimestep] + serviceTime[solution[k]];
 			}
-			System.out.println("total duration without FIFO: " + tTotalDuration);
+			//System.out.println("total duration without FIFO: " + tTotalDuration);
 
 			tTotalDuration = 0;
 			for(int k = 0; k < solution.length -1; k++) {
 				tTotalDuration += getFIFOTravellingTime(solution[k],solution[k + 1],tTotalDuration);
-				//System.out.println(tTotalDuration + " arc travel time without service time " + serviceTime[solution[k+1]]);
 			}
-			System.out.println("total duration with FIFO: " + tTotalDuration);
+			//System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
 		
@@ -409,7 +409,7 @@ public class Main_Construction {
 
 		LocalTime timeEnd = LocalTime.now();
 		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos() /1000;
-		saveInCSV(fileName,"Nearest neighbor algorithm",bestResult,tspPath,computingTime);
+		saveInCSV(fileName,"Nearest neighbor algorithm",totalDuration,tspPathSolution,computingTime);
 	}
 	
 	public static void doNearestInsertion() {
@@ -504,14 +504,14 @@ public class Main_Construction {
 		System.out.println(Arrays.toString(tspPathSolution) + " objective value: " + bestDuration);
 		LocalTime timeEnd = LocalTime.now();
 		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
-		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,bestPath,computingTime);
+		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,tspPathSolution,computingTime);
 	}
 	
 	static void doSavingsAlgo() {
 		LocalTime timeStart = LocalTime.now();
 		System.out.println("Savings Algorithm");
 		int[] savingsPath = new int[cities.length + cities.length-1];
-		int counter = 0;
+		int counter = 1;
 		savingsPath[0]= 0;
 		for(int i = 1;i<savingsPath.length-1;i+=2){
 			savingsPath[i] = counter;
@@ -601,7 +601,6 @@ public class Main_Construction {
 		for(int i = 0;i< bestResultPath.length;i++) {
 			bestResultPath[i] = cities[bestResultPath[i]];
 		}
-		// Compare overall
 		System.out.println(Arrays.toString(bestResultPath) + " objective value: "+ bestDuration);
 		LocalTime timeEnd = LocalTime.now();
 		
@@ -612,10 +611,13 @@ public class Main_Construction {
 	
 	static void doChristofidesAlgorithm() {
 		System.out.println("Christofides Algorithm");
+		LocalTime timeStart = LocalTime.now();
+
 		// transform matrix
-		double[][] distanceFctTimeindependent = new double[nbLocations][nbLocations];
+		distanceFctTimeindependent = new double[nbLocations][nbLocations];
 		
 		// Get average
+		/*
 		for(int i = 0;i<nbLocations;i++) {
 			for(int j = 0;j<nbLocations;j++) {
 				for(int t = 0;t<nbTimeSteps;t++) {
@@ -633,7 +635,7 @@ public class Main_Construction {
 				}
 			}
 		}
-		
+		*/
 		// Get median for distanceFct
 		
 		for(int i = 0;i<nbLocations;i++) {
@@ -648,98 +650,199 @@ public class Main_Construction {
 			}
 		}
 		
-		for(int i = 0;i<nbLocations;i++) {
-			//System.out.println(Arrays.toString(distanceFctTimeindependent[i]));
-		}
-		
 		// calculate minimum spanning tree (Kruskal)
-		int[] mst = new int[cities.length];
-		int[] mstIn = new int[cities.length];
-		Arrays.fill(mst, -1);
+		mst = new LinkedList<>();
+		mstIn = new LinkedList<>();
 		
-		for(int k = 0;k<mst.length -1;k++) {
+		for(int k = 0;k<cities.length -1;k++) {
 			double compare = 999999;
-			for(int i = 0;i<nbLocations;i++) {
-				for(int j = 0;j<nbLocations;j++) {
-					if(distanceFctTimeindependent[i][j] < compare && i !=j) {
-						boolean duplicate = false;
-						for(int m = 0;m<k+1;m++) {
-							if(mst[m] == j ||mstIn[m] == j && mst[m] ==i ||mstIn[m] == i && mst[m] ==j) {
-									duplicate = true;
-							}
-						}
+			int bestI = -2;
+			int bestJ = -2;
+			for(int i = 0;i<cities.length;i++) {
+				for(int j = 0;j<cities.length;j++) {
+					if(distanceFctTimeindependent[cities[i]][cities[j]] < compare && i !=j) {
 						
-						if(!duplicate){
-							compare = distanceFctTimeindependent[i][j];
-							if(k == 0) {
-								mst[k] = i;
-								mstIn[k] = -1;
-							}
-							mst[k+1] = j; 
-							mstIn[k+1] = i;
+						Graph graph = new Graph(cities.length);
+					    for(int m = 0; m<mst.size();m++) {
+					    	graph.addEdge(mstIn.get(m), mst.get(m));
+					    }
+					    graph.addEdge(i, j);
+						
+						if(!graph.isCyclic()){
+							compare = distanceFctTimeindependent[cities[i]][cities[j]];
+							bestI = i;
+							bestJ = j;
+
 						}
 					}
 				}
 			}
+			mst.add(bestJ); 
+			mstIn.add(bestI);
 		}
-		System.out.println(Arrays.toString(mst));
-		System.out.println(Arrays.toString(mstIn));
+		int[] perfectMatching = new int[counter];
+		
+		// !!!Needs to be done!!!
+		doPerfectMatchingPermutation();		
+		
+		// Find Vertices with more than 2 edges
+		
+		List<Integer> needShortcut = new LinkedList<>();
+		counter = 0;
+		for(int i = 0;i<=mst.size();i++) {
+			int helpCounter = 0;
+			for(int j = 0;j<mst.size();j++) {
+				if(i == mst.get(j)) 
+					helpCounter++;
+				if(i == mstIn.get(j)) 
+					helpCounter++;
+			}
+			if(helpCounter > 2) {
+				counter++;
+				needShortcut.add(i);
+			}
+		}		
+		
+		while(!needShortcut.isEmpty()) {
+			double compare = 999999;
+			int bestI = -1;
+			int bestJ = -1;
+			int bestV = -1;
+			for(int vertex: needShortcut) {
+				List<Integer> connectedV = new LinkedList<>();
+				// get all the connected vertices
+				for(int i = 0;i<mst.size();i++) {
+					if(mst.get(i) == vertex)
+						connectedV.add(mstIn.get(i));
+					if(mstIn.get(i) == vertex)
+						connectedV.add(mst.get(i));
+				}				
+				// try shortcut between all of them and save the best saving so far and bestI bestJ deleteI deleteJ
+				
+				for(int i = 0;i<connectedV.size();i++) {
+					for(int j = i+1;j<connectedV.size();j++) {
+						if(distanceFctTimeindependent[cities[i]][cities[j]] - distanceFctTimeindependent[cities[vertex]][cities[j]] - distanceFctTimeindependent[cities[i]][vertex] < compare) {
+							compare = distanceFctTimeindependent[cities[i]][cities[j]] - distanceFctTimeindependent[cities[vertex]][cities[j]] - distanceFctTimeindependent[cities[i]][vertex];
+							bestV = vertex;
+							bestI = i;
+							bestJ = j;
+						}
+					}
+				}
+			}
+			List<Integer> shortcutV = new LinkedList<>();
+			for(int i = 0;i<mst.size();i++) {
+				if(mst.get(i) == bestV)
+					shortcutV.add(mstIn.get(i));
+				if(mstIn.get(i) == bestV)
+					shortcutV.add(mst.get(i));
+			}
+			
+			// remove the two unnecessary arcs
+			int[] removeList = new int[2];
+			counter = 0;
+			for(int i = 0; i < mst.size();i++) {
+				if((mst.get(i) == shortcutV.get(bestI) && mstIn.get(i) == bestV) 
+						||(mst.get(i) == bestV && mstIn.get(i) == shortcutV.get(bestI)) 
+						|| (mst.get(i) == shortcutV.get(bestJ) && mstIn.get(i) == bestV) 
+						||(mst.get(i) == bestV && mstIn.get(i) == shortcutV.get(bestJ))) {
+					removeList[counter++] = i;
+				}
+			}
+			
+			mst.remove(removeList[1]);
+			mstIn.remove(removeList[1]);
+			mst.remove(removeList[0]);
+			mstIn.remove(removeList[0]);
+			
+			
+			mst.add(shortcutV.get(bestI));
+			mstIn.add(shortcutV.get(bestJ));
+			
+			needShortcut = new LinkedList<>();
+			counter = 0;
+			for(int i = 0;i<=mst.size();i++) {
+				int helpCounter = 0;
+				for(int j = 0;j<mst.size();j++) {
+					if(i == mst.get(j)) 
+						helpCounter++;
+					if(i == mstIn.get(j)) 
+						helpCounter++;
+				}
+				if(helpCounter > 2) {
+					counter++;
+					needShortcut.add(i);
+				}
+			}
+		}
+		
+		int[] solution = new int[cities.length +1];
+		int remove = -1;
+		solution[0] = 0;
+		solution[solution.length - 1] = 0;
+		
+		for(int i = 0;i<cities.length-1;i++){
+			for(int j = 0;j<mst.size();j++){
+				if(solution[i] == mst.get(j)) {
+					solution[i+1] = mstIn.get(j);
+					remove = j;
+				}
+				if(solution[i] == mstIn.get(j)) {
+					solution[i+1] = mst.get(j);
+					remove = j;
+				}
+			}
+			mst.remove(remove);
+			mstIn.remove(remove);
+		}
+		
+		totalDuration = 0;
+		for(int k = 0; k < solution.length -1; k++) {
+			totalDuration += getFIFOTravellingTime(solution[k],solution[k + 1],totalDuration);
+		}
+		LocalTime timeEnd = LocalTime.now();
+		
+		for(int i = 0;i < solution.length;i++)
+			solution[i] = cities[solution[i]];
+		System.out.println(Arrays.toString(solution) + " objective value: "+ totalDuration);
+
+		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
+		saveInCSV(fileName,"Christofides algorithm",totalDuration,solution,computingTime);
+	}
+	
+
+	
+	static void doPerfectMatchingPermutation() {
 		
 		// calculate nb of odd degree vertices
+		List<Integer> needMatching = new LinkedList<>();
 		counter = 0;
-		for(int i = 0               ;i<mst.length;i++) {
+		for(int i = 0;i<=mst.size();i++) {
 			int helpCounter = 0;
-			for(int j = 1;j<mst.length;j++) {
-				if(cities[i] == mst[j]) 
+			for(int j = 0;j<mst.size();j++) {
+				if(i == mst.get(j)) 
 					helpCounter++;
-				if(cities[i] == mstIn[j]) 
+				if(i == mstIn.get(j)) 
 					helpCounter++;
 			}
 			if(helpCounter%2 == 1) {
 				counter++;
+				needMatching.add(i);
 			}
 		}
-		System.out.println(counter);
-		int[] perfectMatching = new int[counter];
 		
-		doPerfectMatchingPermutation();
+		//!!! Need perfect matching
 		
-		//
-	}
-	LocalTime timeStart = LocalTime.now();
-	
-	static void doPerfectMatchingPermutation() {
+		while(needMatching.size() !=0) {
+			mst.add(needMatching.get(0));
+			mstIn.add(needMatching.get(1));
+			needMatching.remove(needMatching.get(0));
+			needMatching.remove(needMatching.get(0));
+		}
 		
-	}
-	
-	// Only for Melegarejo permutation
-    static void permute(java.util.List<Integer> arr, int k){
-        for(int i = k; i < arr.size(); i++){
-            java.util.Collections.swap(arr, i, k);
-            permute(arr, k+1);
-            java.util.Collections.swap(arr, k, i);
-        }
-        if (k == arr.size() -1){
-            //counter++;
-            //System.out.println(java.util.Arrays.toString(arr.toArray()) + " "+ counter);
-            	
-    		double tTotalDuration = 0;
-    		tTotalDuration = getFIFOTravellingTime(222,arr.get(0),0);
-    		for(int j = 0; j < arr.size() -1; j++) {
-    			tTotalDuration += getFIFOTravellingTime(arr.get(j),arr.get(j+1),tTotalDuration);
-    		}
-			tTotalDuration += getFIFOTravellingTime(arr.get(arr.size()-1),222,tTotalDuration);
 
-    		if(tTotalDuration < bestDuration) {
-    			bestDuration = tTotalDuration;
-    			System.out.println("New best duration: " + bestDuration);
-    			System.out.println("222 " + Arrays.toString(arr.toArray()) + " 222");
-    		
-            }
-        }
-        //System.out.println("Final best duration: " + bestDuration);
-    }
-    
+	}
+	    
     
 	/**
 	 * Transform the distance function into one that respects the FIFO (First In First Out) property
