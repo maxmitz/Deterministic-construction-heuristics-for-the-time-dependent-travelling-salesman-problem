@@ -48,7 +48,6 @@ public class Main_Construction {
 	
 	public static void main(String[]args) throws FileNotFoundException {
 
-/*
 		// Cordeau
 		isCordeau = true;
 		int[] numbersCordeau = {15,20,25,30,35,40};
@@ -70,20 +69,31 @@ public class Main_Construction {
 		for (String name :stringListOfFiles) {
 			System.out.println("\n"+name);
 			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\"+name;
-			
-			
 			DataReading dataReading = new DataReading(fileName);
+			fileName = name;
 			distanceFct = dataReading.getDistanceFctCordeau();
 			nbLocations = dataReading.getnbLocations();
 			nbTimeSteps = dataReading.getnbTimeSteps();
 			durationTimeStep = dataReading.getdurationTimeStep();
 			setFIFODistanceFct();	
+			
+			// General TD-TSP
+			cities = new int[nbLocations-1];
+			for(int i=0;i<nbLocations-1;i++) {
+				cities[i] = i;
+			}
+			citiesHelp = new int[cities.length];
+			tspPath = new int[cities.length + 1];
+			bestResultPath = new int[cities.length + 1];
 						
 			// Compare with given results from Cordeau
 			//15ANodi_1
 			int[] solutionCordeau = {0, 6 ,15 ,14, 3 ,1 ,11, 8, 2, 12, 4 ,7, 9, 13 ,10, 5, 0};
+			//15ANodi_2
+			//int[] solutionCordeau = {0, 14, 6, 15, 5, 12, 10, 7, 1, 2, 3, 9, 11, 13, 4, 8, 0}; 
 			//15CNodi_1
 			//int[] solutionCordeau = {0, 7, 2, 14, 15, 13, 3, 12, 9, 8, 1, 5, 11, 6, 10, 4, 0};
+			//int[] solutionCordeau = {0, 2, 14, 15, 7, 13, 3, 12, 9, 1, 8, 5, 11, 6, 4, 10, 0};
 			double tTotalDuration = 0;
 			int tCurrentTimestep = 0;
 			for(int k = 0; k < solutionCordeau.length -1; k++) {
@@ -98,14 +108,6 @@ public class Main_Construction {
 				tTotalDuration += getFIFOTravellingTime(solutionCordeau[k],solutionCordeau[k + 1],tTotalDuration);
 			}
 			System.out.println("total duration with FIFO: " + tTotalDuration);
-			// General TD-TSP
-			cities = new int[nbLocations-1];
-			for(int i=0;i<nbLocations-1;i++) {
-				cities[i] = i;
-			}
-			citiesHelp = new int[cities.length];
-			tspPath = new int[cities.length + 1];
-			bestResultPath = new int[cities.length + 1];
 			
 			doFirstFit();
 			doNearestNeighbor();
@@ -114,9 +116,8 @@ public class Main_Construction {
 			//doChristofidesAlgorithm();
 		}
 		isCordeau = false;
-		*/
 		
-		
+		/*
 		// Melgarejo
 		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileName);
@@ -203,7 +204,7 @@ public class Main_Construction {
 			//System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
-		
+		*/
 		
 		/*
 		// Rifki
@@ -297,7 +298,15 @@ public class Main_Construction {
 	
 	public static void saveInCSV(String fileName, String heuristic,double bestResult, int[]bestResultPath, int time) {
 		try {
-			FileWriter writer = new FileWriter("test.csv",true);
+			File test = new File("results.csv");
+			if(!test.exists()) {
+				FileWriter writer = new FileWriter("results.csv",true);
+				writer.append("Instance"+";"+"Heuristic"+";"+"Solution time"+";"+"Solution"+";"+ "Computation Time");
+				writer.append("\n"+fileName+";"+heuristic+";"+(int)bestResult+";"+Arrays.toString(bestResultPath)+";"+ time);
+				writer.flush();
+				writer.close();
+			}
+			FileWriter writer = new FileWriter("results.csv",true);
 			writer.append("\n"+fileName+";"+heuristic+";"+(int)bestResult+";"+Arrays.toString(bestResultPath)+";"+ time);
 			writer.flush();
 			writer.close();

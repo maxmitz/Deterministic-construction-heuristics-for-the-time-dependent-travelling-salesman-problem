@@ -74,9 +74,18 @@ public class DataReading {
 				for(int t = 0;t<3;t++) {
 					speed[t][j] = file.nextDouble();
 					// Try degeradation of congestion factor
+					if(j==0 && t!=1) {
+						speed[t][j] = speed[t][j] *2*0.7;
+					}					
+
+					if(j==1 && t!=1) {
+						speed[t][j] = speed[t][j];
+					}					
+
 					if(j==2 && t!=1) {
-						//speed[t][j] = speed[t][j] *0.95;
-					}
+						speed[t][j] = speed[t][j] *2*0.99;
+					}					
+
 				}
 			}
 			for (int i=0;i< 9; i++) {
