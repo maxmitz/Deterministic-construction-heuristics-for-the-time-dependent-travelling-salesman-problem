@@ -41,13 +41,14 @@ public class Main_Construction {
 	
 	static List<Integer> mst;
 	static List<Integer> mstIn;
+	static int[] bestMatching;
 	
 	//from FIFO
 	private static FIFOTimeStep[][][] FIFODistanceFct;
 
 	
 	public static void main(String[]args) throws FileNotFoundException {
-
+		/*
 		// Cordeau
 		isCordeau = true;
 		int[] numbersCordeau = {15,20,25,30,35,40};
@@ -116,8 +117,8 @@ public class Main_Construction {
 			//doChristofidesAlgorithm();
 		}
 		isCordeau = false;
+		*/
 		
-		/*
 		// Melgarejo
 		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileName);
@@ -146,14 +147,14 @@ public class Main_Construction {
 		counter=0;
 		
 		stringListOfFiles = new String[1];
-		stringListOfFiles[0] = "10\\inst_10_1.txt";
+		stringListOfFiles[0] = "10\\inst_10_13.txt";
 		
-		for(String name : stringListOfFiles) {
-			System.out.println(name);
-			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
-			dataReading = new DataReading(fileName);
+		for(String fileName : stringListOfFiles) {
+			System.out.println(fileName);
+			String fileNameBenchmark = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
+			dataReading = new DataReading(fileNameBenchmark);
 			distanceFct = dataReading.getDistanceFctMelgarejo();
-			file = new Scanner(new File(folderName+name));
+			file = new Scanner(new File(folderName+fileName));
 			file.useLocale(Locale.US);
 			cities = new int[file.nextInt()];
 			serviceTime = new int[cities.length];
@@ -174,10 +175,10 @@ public class Main_Construction {
 			tspPath = new int[cities.length + 1];
 			bestResultPath = new int[cities.length + 1];
 			
-			doFirstFit();
-			doNearestNeighbor();
-			doNearestInsertion();
-			doSavingsAlgo();
+			//doFirstFit();
+			//doNearestNeighbor();
+			//doNearestInsertion();
+			//doSavingsAlgo();
 			doChristofidesAlgorithm();
 
 			// Compare with results from instances
@@ -204,7 +205,7 @@ public class Main_Construction {
 			//System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
-		*/
+		
 		
 		/*
 		// Rifki
@@ -239,7 +240,10 @@ public class Main_Construction {
 			citiesHelp = new int[cities.length];
 			tspPath = new int[cities.length + 1];
 			bestResultPath = new int[cities.length + 1];
+			setFIFODistanceFct();
 			
+			serviceTime = new int[nbLocations];
+			Arrays.fill(serviceTime, 180);
 			
 			doFirstFit();
 			doNearestNeighbor();
@@ -247,6 +251,7 @@ public class Main_Construction {
 			doSavingsAlgo();
 			doChristofidesAlgorithm();
 		}
+		
 		*/
 		// Normal TSP
 		/*
@@ -689,10 +694,40 @@ public class Main_Construction {
 			mst.add(bestJ); 
 			mstIn.add(bestI);
 		}
-		int[] perfectMatching = new int[counter];
+		System.out.println("After Kruskal");
+		System.out.println(mst);
+		System.out.println(mstIn);
 		
 		// !!!Needs to be done!!!
-		doPerfectMatchingPermutation();		
+		bestDuration = 999999;
+		//doPerfectMatchingPermutation();
+		List<Integer> needMatching = new LinkedList<>();
+		counter = 0;
+		for(int i = 0;i<=mst.size();i++) {
+			int helpCounter = 0;
+			for(int j = 0;j<mst.size();j++) {
+				if(i == mst.get(j)) 
+					helpCounter++;
+				if(i == mstIn.get(j)) 
+					helpCounter++;
+			}
+			if(helpCounter%2 == 1) {
+				counter++;
+				needMatching.add(i);
+			}
+		}
+		
+    	bestMatching = new int[needMatching.size()];
+		permuteMatching(needMatching,0);
+		for(int i = 0;i<bestMatching.length -1;i+=2) {
+			mst.add(bestMatching[i]);
+			mstIn.add(bestMatching[i+1]);
+
+		}
+				
+		System.out.println("After matching");
+		System.out.println(mst);
+		System.out.println(mstIn);
 		
 		// Find Vertices with more than 2 edges
 		
@@ -730,11 +765,35 @@ public class Main_Construction {
 				
 				for(int i = 0;i<connectedV.size();i++) {
 					for(int j = i+1;j<connectedV.size();j++) {
-						if(distanceFctTimeindependent[cities[i]][cities[j]] - distanceFctTimeindependent[cities[vertex]][cities[j]] - distanceFctTimeindependent[cities[i]][vertex] < compare) {
-							compare = distanceFctTimeindependent[cities[i]][cities[j]] - distanceFctTimeindependent[cities[vertex]][cities[j]] - distanceFctTimeindependent[cities[i]][vertex];
-							bestV = vertex;
-							bestI = i;
-							bestJ = j;
+						if(distanceFctTimeindependent[cities[connectedV.get(i)]][cities[connectedV.get(j)]] - distanceFctTimeindependent[cities[vertex]][cities[j]] - distanceFctTimeindependent[cities[connectedV.get(i)]][vertex] < compare) {
+							// Check for duplicate
+							
+			    			boolean duplicate = false;
+			        		for(int k = 0; k < mst.size() -1; k+= 2) {
+		        				if((connectedV.get(i) == mst.get(k) && connectedV.get(j) == mstIn.get(k))
+		        						|| (connectedV.get(j) == mst.get(k) && connectedV.get(i) == mstIn.get(k)))
+		        					duplicate = true;
+			        		} 
+			    			if(!duplicate) {
+			    				
+			    				// check for independent cycles
+								Graph graph = new Graph(cities.length);
+							    for(int m = 0; m<mst.size();m++) {
+							    	graph.addEdge(mstIn.get(m), mst.get(m));
+							    }
+							    graph.addEdge(i, j);
+							    graph.removeEdge(i,vertex);
+							    graph.removeEdge(j,vertex);
+							    graph.removeEdge(vertex,i);
+							    graph.removeEdge(vertex,j);
+							    
+							    if(!graph.isCyclic()) {
+									compare = distanceFctTimeindependent[cities[connectedV.get(i)]][cities[connectedV.get(j)]] - distanceFctTimeindependent[cities[vertex]][cities[connectedV.get(j)]] - distanceFctTimeindependent[cities[connectedV.get(i)]][vertex];
+									bestV = vertex;
+									bestI = i;
+									bestJ = j;
+							    }
+			    			}
 						}
 					}
 				}
@@ -759,6 +818,7 @@ public class Main_Construction {
 				}
 			}
 			
+			
 			mst.remove(removeList[1]);
 			mstIn.remove(removeList[1]);
 			mst.remove(removeList[0]);
@@ -767,6 +827,10 @@ public class Main_Construction {
 			
 			mst.add(shortcutV.get(bestI));
 			mstIn.add(shortcutV.get(bestJ));
+			
+			System.out.println("After remove");
+			System.out.println(mst);
+			System.out.println(mstIn);
 			
 			needShortcut = new LinkedList<>();
 			counter = 0;
@@ -821,37 +885,42 @@ public class Main_Construction {
 	
 
 	
-	static void doPerfectMatchingPermutation() {
-		
-		// calculate nb of odd degree vertices
-		List<Integer> needMatching = new LinkedList<>();
-		counter = 0;
-		for(int i = 0;i<=mst.size();i++) {
-			int helpCounter = 0;
-			for(int j = 0;j<mst.size();j++) {
-				if(i == mst.get(j)) 
-					helpCounter++;
-				if(i == mstIn.get(j)) 
-					helpCounter++;
-			}
-			if(helpCounter%2 == 1) {
-				counter++;
-				needMatching.add(i);
-			}
-		}
-		
-		//!!! Need perfect matching
-		
-		while(needMatching.size() !=0) {
-			mst.add(needMatching.get(0));
-			mstIn.add(needMatching.get(1));
-			needMatching.remove(needMatching.get(0));
-			needMatching.remove(needMatching.get(0));
-		}
-		
-
-	}
-	    
+    static void permuteMatching(java.util.List<Integer> arr, int k){
+        for(int i = k; i < arr.size(); i++){
+            java.util.Collections.swap(arr, i, k);
+            permuteMatching(arr, k+1);
+            java.util.Collections.swap(arr, k, i);
+        }
+        if (k == arr.size() -1){
+    		double totalDuration = 0;
+    		for(int j = 0; j < arr.size() -1; j+= 2) {
+    			totalDuration += distanceFctTimeindependent[arr.get(j)][arr.get(j+1)];
+    		} 
+    		
+    		if(totalDuration < bestDuration) {
+    			
+    			// check for duplicate
+    			boolean duplicate = false;
+        		for(int j = 0; j < arr.size() -1; j+= 2) {
+        			for(int l = 0;l < mst.size();l++) {
+        				if((arr.get(j) == mst.get(l) && arr.get(j+1) == mstIn.get(l))
+        						|| (arr.get(j) == mstIn.get(l) && arr.get(j+1) == mst.get(l)))
+        					duplicate = true;
+        			}
+        		} 
+    			if(!duplicate) {
+    				
+    				
+        			bestDuration = totalDuration;
+        			for(int j = 0;j<bestMatching.length;j++) {
+        				bestMatching[j] = arr.get(j);
+        			}
+        			System.out.println("New best duration: " + bestDuration + " with the path " + Arrays.toString(bestMatching));
+        			System.out.println(Arrays.toString(arr.toArray()));
+    			}
+            }
+        } 
+    }
     
 	/**
 	 * Transform the distance function into one that respects the FIFO (First In First Out) property
@@ -923,3 +992,5 @@ public class Main_Construction {
 		}
 	}
 }
+
+

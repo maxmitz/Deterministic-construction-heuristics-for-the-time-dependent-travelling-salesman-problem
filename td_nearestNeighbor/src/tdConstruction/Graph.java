@@ -3,39 +3,42 @@ package tdConstruction;
 import java.io.*;
 import java.util.*;
 
-class Graph
-{
+class Graph{
    
     private int V;  
   
     private LinkedList<Integer> adj[];
 
-    Graph(int v)
-    {
+    Graph(int v){
         V = v;
         adj = new LinkedList[v];
         for(int i=0; i<v; ++i)
             adj[i] = new LinkedList();
     }
 
-    void addEdge(int v,int w)
-    {
+    void addEdge(int v,int w){
         adj[v].add(w);
         adj[w].add(v);
     }
+    
+    void removeEdge(int v,int w){
+    	try {
+        adj[v].remove(w);
+        adj[w].remove(v);
+    	} catch(Exception e) {
+    		
+    	}
+    }
  
 
-    Boolean isCyclicUtil(int v,
-                 Boolean visited[], int parent)
-    {
+    Boolean isCyclicUtil(int v,Boolean visited[], int parent){
 
         visited[v] = true;
         Integer i;
 
         Iterator<Integer> it =
                 adj[v].iterator();
-        while (it.hasNext())
-        {
+        while (it.hasNext()){
             i = it.next();
  
 
