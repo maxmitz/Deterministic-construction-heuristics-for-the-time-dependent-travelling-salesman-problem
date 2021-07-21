@@ -43,7 +43,7 @@ public class Main_Construction {
 	static List<Integer> mstIn;
 	static int[] bestMatching;
 	
-	//from FIFO
+	//from FIFO function
 	private static FIFOTimeStep[][][] FIFODistanceFct;
 
 	
