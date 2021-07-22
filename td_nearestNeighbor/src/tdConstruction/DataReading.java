@@ -11,7 +11,7 @@ public class DataReading {
 	String filePath;
 	int nbLocations = -1;
 	int nbTimeSteps = -1;
-	int durationTimestep = -1;
+	double durationTimestep = -1;
 	String fileName;
 	Scanner file;
 	
@@ -32,6 +32,12 @@ public class DataReading {
 	}
 	
 	public Integer getdurationTimeStep() {
+		if (durationTimestep != -1)
+			return (int) durationTimestep;
+		return null;
+	}
+	
+	public Double getdurationTimeStepCordeau() {
 		if (durationTimestep != -1)
 			return durationTimestep;
 		return null;
@@ -64,7 +70,7 @@ public class DataReading {
 			}
 			
 			file.nextDouble();
-			this.durationTimestep = (int) file.nextDouble();
+			this.durationTimestep = file.nextDouble();
 			
 			for (int i=0;i< 5; i++) {
 				file.nextLine();

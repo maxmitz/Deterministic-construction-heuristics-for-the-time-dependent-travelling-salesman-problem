@@ -43,7 +43,7 @@ public class Main_Construction {
 	static List<Integer> mstIn;
 	static int[] bestMatching;
 	
-	//from FIFO function
+	//from FIFO
 	private static FIFOTimeStep[][][] FIFODistanceFct;
 
 	
@@ -120,8 +120,8 @@ public class Main_Construction {
 		*/
 		
 		// Melgarejo
-		fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
-		DataReading dataReading = new DataReading(fileName);
+		String fileNameBenchmark = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
+		DataReading dataReading = new DataReading(fileNameBenchmark);
 		distanceFct = dataReading.getDistanceFctMelgarejo();
 		nbLocations = dataReading.getnbLocations();
 		nbTimeSteps = dataReading.getnbTimeSteps();
@@ -146,12 +146,12 @@ public class Main_Construction {
 		}
 		counter=0;
 		
-		stringListOfFiles = new String[1];
-		stringListOfFiles[0] = "10\\inst_10_13.txt";
+		//stringListOfFiles = new String[1];
+		//stringListOfFiles[0] = "10\\inst_10_13.txt";
 		
-		for(String fileName : stringListOfFiles) {
+		for(String fileNamet : stringListOfFiles) {
+			fileName = fileNamet;
 			System.out.println(fileName);
-			String fileNameBenchmark = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 			dataReading = new DataReading(fileNameBenchmark);
 			distanceFct = dataReading.getDistanceFctMelgarejo();
 			file = new Scanner(new File(folderName+fileName));
@@ -175,11 +175,11 @@ public class Main_Construction {
 			tspPath = new int[cities.length + 1];
 			bestResultPath = new int[cities.length + 1];
 			
-			//doFirstFit();
-			//doNearestNeighbor();
-			//doNearestInsertion();
-			//doSavingsAlgo();
-			doChristofidesAlgorithm();
+			doFirstFit();
+			doNearestNeighbor();
+			doNearestInsertion();
+			doSavingsAlgo();
+			//doChristofidesAlgorithm();
 
 			// Compare with results from instances
 			counter = 0;
@@ -306,13 +306,12 @@ public class Main_Construction {
 			File test = new File("results.csv");
 			if(!test.exists()) {
 				FileWriter writer = new FileWriter("results.csv",true);
-				writer.append("Instance"+";"+"Heuristic"+";"+"Solution time"+";"+"Solution"+";"+ "Computation Time");
-				writer.append("\n"+fileName+";"+heuristic+";"+(int)bestResult+";"+Arrays.toString(bestResultPath)+";"+ time);
+				writer.append("Instance"+";"+"Heuristic"+";"+"Objective function value"+";"+"Solution"+";"+ "Computation Time (in seconds)"+";"+"Number of time steps");
 				writer.flush();
 				writer.close();
 			}
 			FileWriter writer = new FileWriter("results.csv",true);
-			writer.append("\n"+fileName+";"+heuristic+";"+(int)bestResult+";"+Arrays.toString(bestResultPath)+";"+ time);
+			writer.append("\n"+fileName+";"+heuristic+";"+(int)bestResult+";"+Arrays.toString(bestResultPath)+";"+ time + ";" +nbTimeSteps);
 			writer.flush();
 			writer.close();
 		} catch (IOException e) {
@@ -321,6 +320,7 @@ public class Main_Construction {
 	}
 	
 	public static void doFirstFit() {
+		System.out.println("First-Fit algorithm");
 		LocalTime timeStart = LocalTime.now();
 		bestResult = 999999;
 		int[] originalCities = new int[cities.length];
@@ -328,9 +328,6 @@ public class Main_Construction {
 			originalCities[m] = cities[m];
 		}
 		
-		
-		System.out.println("First-Fit algorithm");
-		//change to l<cities.length to treat every vertex as possible depot
 		for(int l = 0; l < 1; l++) {
 			totalDuration = 0;
 			for(int k = 0; k < cities.length -1; k++) {
@@ -373,22 +370,18 @@ public class Main_Construction {
 			cities[m] = originalCities[m];
 		}
 		
-		
-		System.out.println(Arrays.toString(bestResultPath) + " objective value: " + bestResult);
-		
 		LocalTime timeEnd = LocalTime.now();
-		
-		
+		System.out.println(Arrays.toString(bestResultPath) + " objective value: " + bestResult);
 		//Mikro
-		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;	
-		saveInCSV(fileName,"First-Fit algorithm",bestResult,bestResultPath,computingTime);
+		float computingTime = Duration.between(timeStart,timeEnd).toSeconds();	
+		saveInCSV(fileName,"First-Fit algorithm",bestResult,bestResultPath, (int) computingTime);
 				  
 		
 	}
 	
 	public static void doNearestNeighbor() {
-		LocalTime timeStart = LocalTime.now();
 		System.out.println("Nearest neighbor algorithm");
+		LocalTime timeStart = LocalTime.now();
 		double neighborTime;
 		bestResult = 999999;
 		int[] tspPathSolution = new int[tspPath.length];
@@ -419,11 +412,10 @@ public class Main_Construction {
 		}
 		totalDuration += getFIFOTravellingTime(tspPath[tspPath.length-2],tspPath[tspPath.length-1],totalDuration);
 
-		System.out.println(Arrays.toString(tspPathSolution)+ " objective value: " + totalDuration);
-
 		LocalTime timeEnd = LocalTime.now();
-		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos() /1000;
-		saveInCSV(fileName,"Nearest neighbor algorithm",totalDuration,tspPathSolution,computingTime);
+		System.out.println(Arrays.toString(tspPathSolution)+ " objective value: " + totalDuration);
+		float computingTime = Duration.between(timeStart,timeEnd).toSeconds();
+		saveInCSV(fileName,"Nearest neighbor algorithm",totalDuration,tspPathSolution,(int)computingTime);
 	}
 	
 	public static void doNearestInsertion() {
@@ -515,15 +507,15 @@ public class Main_Construction {
 		}
 		for(int i = 0;i<tspPath.length;i++)
 			tspPathSolution[i] = cities[bestPath[i]];
-		System.out.println(Arrays.toString(tspPathSolution) + " objective value: " + bestDuration);
 		LocalTime timeEnd = LocalTime.now();
-		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
-		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,tspPathSolution,computingTime);
+		System.out.println(Arrays.toString(tspPathSolution) + " objective value: " + bestDuration);
+		float computingTime = Duration.between(timeStart,timeEnd).toSeconds();
+		saveInCSV(fileName,"Nearest insertion algorithm",bestDuration,tspPathSolution,(int)computingTime);
 	}
 	
 	static void doSavingsAlgo() {
-		LocalTime timeStart = LocalTime.now();
 		System.out.println("Savings Algorithm");
+		LocalTime timeStart = LocalTime.now();
 		int[] savingsPath = new int[cities.length + cities.length-1];
 		int counter = 1;
 		savingsPath[0]= 0;
@@ -615,11 +607,11 @@ public class Main_Construction {
 		for(int i = 0;i< bestResultPath.length;i++) {
 			bestResultPath[i] = cities[bestResultPath[i]];
 		}
-		System.out.println(Arrays.toString(bestResultPath) + " objective value: "+ bestDuration);
-		LocalTime timeEnd = LocalTime.now();
 		
-		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
-		saveInCSV(fileName,"Savings algorithm",bestDuration,bestResultPath,computingTime);
+		LocalTime timeEnd = LocalTime.now();
+		System.out.println(Arrays.toString(bestResultPath) + " objective value: "+ bestDuration);		
+		float computingTime = Duration.between(timeStart,timeEnd).toSeconds();
+		saveInCSV(fileName,"Savings algorithm",bestDuration,bestResultPath,(int)computingTime);
 		
 	}
 	
@@ -879,11 +871,9 @@ public class Main_Construction {
 			solution[i] = cities[solution[i]];
 		System.out.println(Arrays.toString(solution) + " objective value: "+ totalDuration);
 
-		int computingTime = (int) Duration.between(timeStart,timeEnd).toNanos()/1000;
-		saveInCSV(fileName,"Christofides algorithm",totalDuration,solution,computingTime);
+		float computingTime = Duration.between(timeStart,timeEnd).toNanos()/1000;
+		saveInCSV(fileName,"Christofides algorithm",totalDuration,solution,(int)computingTime);
 	}
-	
-
 	
     static void permuteMatching(java.util.List<Integer> arr, int k){
         for(int i = k; i < arr.size(); i++){
@@ -922,9 +912,6 @@ public class Main_Construction {
         } 
     }
     
-	/**
-	 * Transform the distance function into one that respects the FIFO (First In First Out) property
-	 */
 	public static void setFIFODistanceFct() {
 
 		FIFODistanceFct = new FIFOTimeStep[nbLocations][nbLocations][nbTimeSteps];
