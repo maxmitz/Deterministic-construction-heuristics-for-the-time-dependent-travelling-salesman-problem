@@ -273,3 +273,147 @@ for(int l = 0; l < 1; l++) {
         //System.out.println("Final best duration: " + bestDuration);
     }
  */     
+
+// Christofides old shortcut
+
+/**
+// Find Vertices with more than 2 edges
+
+List<Integer> needShortcut = new LinkedList<>();
+counter = 0;
+for(int i = 0;i<=mst.size();i++) {
+	int helpCounter = 0;
+	for(int j = 0;j<mst.size();j++) {
+		if(i == mst.get(j)) 
+			helpCounter++;
+		if(i == mstIn.get(j)) 
+			helpCounter++;
+	}
+	if(helpCounter > 2) {
+		counter++;
+		needShortcut.add(i);
+	}
+}		
+
+while(!needShortcut.isEmpty()) {
+	double compare = 999999;
+	int bestI = -1;
+	int bestJ = -1;
+	int bestV = -1;
+	for(int vertex: needShortcut) {
+		List<Integer> connectedV = new LinkedList<>();
+		// get all the connected vertices
+		for(int i = 0;i<mst.size();i++) {
+			if(mst.get(i) == vertex)
+				connectedV.add(mstIn.get(i));
+			if(mstIn.get(i) == vertex)
+				connectedV.add(mst.get(i));
+		}				
+		// try shortcut between all of them and save the best saving so far and bestI bestJ deleteI deleteJ
+		
+		for(int i = 0;i<connectedV.size();i++) {
+			for(int j = i+1;j<connectedV.size();j++) {
+				if(distanceFctTimeindependent[cities[connectedV.get(i)]][cities[connectedV.get(j)]] - distanceFctTimeindependent[cities[vertex]][cities[j]] - distanceFctTimeindependent[cities[connectedV.get(i)]][vertex] < compare) {
+					// Check for duplicate
+					
+	    			boolean duplicate = false;
+	        		for(int k = 0; k < mst.size() -1; k+= 2) {
+        				if((connectedV.get(i) == mst.get(k) && connectedV.get(j) == mstIn.get(k))
+        						|| (connectedV.get(j) == mst.get(k) && connectedV.get(i) == mstIn.get(k)))
+        					duplicate = true;
+	        		} 
+	    			if(!duplicate) {
+	    				
+	    				// check for independent cycles
+						Graph graph = new Graph(cities.length);
+
+					    for(int m = 0; m<mst.size();m++) {
+					    	graph.addEdge(mstIn.get(m), mst.get(m));
+					    }
+					    graph.addEdge(i, j);
+					    graph.removeEdge(i,vertex);
+					    graph.removeEdge(j,vertex);
+					    graph.removeEdge(vertex,i);
+					    graph.removeEdge(vertex,j);
+					    
+					    if(!graph.isCyclic()|| mst.size() == cities.length + 1 ) {
+							compare = distanceFctTimeindependent[cities[connectedV.get(i)]][cities[connectedV.get(j)]] - distanceFctTimeindependent[cities[vertex]][cities[connectedV.get(j)]] - distanceFctTimeindependent[cities[connectedV.get(i)]][vertex];
+							bestV = vertex;
+							bestI = i;
+							bestJ = j;
+					    }
+	    			}
+				}
+			}
+		}
+	}
+	List<Integer> shortcutV = new LinkedList<>();
+	for(int i = 0;i<mst.size();i++) {
+		if(mst.get(i) == bestV)
+			shortcutV.add(mstIn.get(i));
+		if(mstIn.get(i) == bestV)
+			shortcutV.add(mst.get(i));
+	}
+	
+	// remove the two unnecessary arcs
+	int[] removeList = new int[2];
+	counter = 0;
+	for(int i = 0; i < mst.size();i++) {
+		if((mst.get(i) == shortcutV.get(bestI) && mstIn.get(i) == bestV) 
+				||(mst.get(i) == bestV && mstIn.get(i) == shortcutV.get(bestI)) 
+				|| (mst.get(i) == shortcutV.get(bestJ) && mstIn.get(i) == bestV) 
+				||(mst.get(i) == bestV && mstIn.get(i) == shortcutV.get(bestJ))) {
+			removeList[counter++] = i;
+		}
+	}
+	
+	
+	mst.remove(removeList[1]);
+	mstIn.remove(removeList[1]);
+	mst.remove(removeList[0]);
+	mstIn.remove(removeList[0]);
+	
+	
+	mst.add(shortcutV.get(bestI));
+	mstIn.add(shortcutV.get(bestJ));
+	
+	System.out.println("After remove");
+	System.out.println(mst);
+	System.out.println(mstIn);
+	
+	needShortcut = new LinkedList<>();
+	counter = 0;
+	for(int i = 0;i<=mst.size();i++) {
+		int helpCounter = 0;
+		for(int j = 0;j<mst.size();j++) {
+			if(i == mst.get(j)) 
+				helpCounter++;
+			if(i == mstIn.get(j)) 
+				helpCounter++;
+		}
+		if(helpCounter > 2) {
+			counter++;
+			needShortcut.add(i);
+		}
+	}
+}
+
+int remove = -1;
+solution[0] = 0;
+solution[solution.length - 1] = 0;
+
+for(int i = 0;i<cities.length-1;i++){
+	for(int j = 0;j<mst.size();j++){
+		if(solution[i] == mst.get(j)) {
+			solution[i+1] = mstIn.get(j);
+			remove = j;
+		}
+		if(solution[i] == mstIn.get(j)) {
+			solution[i+1] = mst.get(j);
+			remove = j;
+		}
+	}
+	mst.remove(remove);
+	mstIn.remove(remove);
+}
+**/
