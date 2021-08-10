@@ -1,6 +1,10 @@
 package tdConstruction;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ChristofidesElement {
 	int vertice;
@@ -417,3 +421,183 @@ for(int i = 0;i<cities.length-1;i++){
 	mstIn.remove(remove);
 }
 **/
+
+/*
+
+static void doChristofidesAlgorithm() {
+		System.out.println("Christofides Algorithm");
+		LocalTime timeStart = LocalTime.now();
+
+		// transform matrix
+		distanceFctTimeindependent = new double[nbLocations][nbLocations];
+		
+		// Get average
+
+		for(int i = 0;i<nbLocations;i++) {
+			for(int j = 0;j<nbLocations;j++) {
+				for(int t = 0;t<nbTimeSteps;t++) {
+					distanceFctTimeindependent[i][j] += distanceFct[i][j][t];
+				}
+				distanceFctTimeindependent[i][j] = distanceFctTimeindependent[i][j] / nbTimeSteps;
+			}
+		}
+		
+		for(int i = 0;i<nbLocations;i++) {
+			for(int j = 0;j<nbLocations;j++) {
+				if(i != j) {
+					distanceFctTimeindependent[i][j] = (distanceFctTimeindependent[i][j] + distanceFctTimeindependent[j][i]) /2;
+					distanceFctTimeindependent[j][i] = distanceFctTimeindependent[i][j];
+				}
+			}
+		}
+		
+		// Get median for distanceFct
+		
+		for(int i = 0;i<nbLocations;i++) {
+			for(int j = 0;j<nbLocations;j++) {
+				double[] listMedian = new double[nbTimeSteps*2];
+				for(int t = 0;t<nbTimeSteps;t++) {
+					listMedian[t] = distanceFct[i][j][t];
+					listMedian[t+nbTimeSteps] = distanceFct[j][i][t];
+				}
+				Arrays.sort(listMedian);
+				distanceFctTimeindependent[i][j] = (listMedian[nbTimeSteps] + listMedian[nbTimeSteps+1])/2;
+			}
+		}
+		
+		// calculate minimum spanning tree (Kruskal)
+		mst = new LinkedList<>();
+		mstIn = new LinkedList<>();
+		
+		for(int k = 0;k<cities.length -1;k++) {
+			double compare = 999999;
+			int bestI = -2;
+			int bestJ = -2;
+			for(int i = 0;i<cities.length;i++) {
+				for(int j = 0;j<cities.length;j++) {
+					if(distanceFctTimeindependent[cities[i]][cities[j]] < compare && i !=j) {
+						
+						Graph graph = new Graph(cities.length);
+					    for(int m = 0; m<mst.size();m++) {
+					    	graph.addEdge(mstIn.get(m), mst.get(m));
+					    }
+					    graph.addEdge(i, j);
+						
+						if(!graph.isCyclic()){
+							compare = distanceFctTimeindependent[cities[i]][cities[j]];
+							bestI = i;
+							bestJ = j;
+
+						}
+					}
+				}
+			}
+			mst.add(bestJ); 
+			mstIn.add(bestI);
+		}
+		System.out.println("Kruskal done");
+		
+		bestDuration = 999999;
+		List<Integer> needMatching = new LinkedList<>();
+		counter = 0;
+		for(int i = 0;i<=mst.size();i++) {
+			int helpCounter = 0;
+			for(int j = 0;j<mst.size();j++) {
+				if(i == mst.get(j)) 
+					helpCounter++;
+				if(i == mstIn.get(j)) 
+					helpCounter++;
+			}
+			if(helpCounter%2 == 1) {
+				counter++;
+				needMatching.add(i);
+			}
+		}
+		
+    	bestMatching = new int[needMatching.size()];
+		permuteMatching(needMatching,0);
+		for(int i = 0;i<bestMatching.length -1;i+=2) {
+			mst.add(bestMatching[i]);
+			mstIn.add(bestMatching[i+1]);
+
+		}
+				
+		System.out.println("Matching done");
+		List<Integer> unvisitedV = new LinkedList<>();
+		List<Integer> sol = new LinkedList<>();
+		
+		for(int i = 0; i<cities.length;i++) {
+			unvisitedV.add(i);
+		}
+		
+		int currentV = 0;
+		
+		for(int j = 0;j < cities.length;j++) {
+			int remove = -1;
+			counter = 0;
+			for(int i = 0; i < mst.size();i++) {
+				if(mst.get(i) == currentV) {
+					for(int unv: unvisitedV) {
+						if (unv == mstIn.get(i)) {
+							remove = i;
+
+						}
+					}
+				}
+				if(mstIn.get(i) == currentV) {
+					for(int unv: unvisitedV) {
+						if (unv == mst.get(i)) {
+							remove = i;
+
+						}
+					}
+				}
+			}
+			if(remove == -1) {
+				int compare = 999999;
+				int bestV = -1;
+				for(int unv:unvisitedV) {
+					if(unv != -1) {
+						if (distanceFctTimeindependent[cities[currentV]][cities[unv]] < compare) {
+							bestV = unv;
+						}
+					}
+				}
+				sol.add(currentV);
+				unvisitedV.set(currentV, -1);
+				currentV = bestV;
+				
+				
+			} else if(mst.get(remove) == currentV) {
+				sol.add(currentV);
+				unvisitedV.set(currentV, -1);
+				currentV = mstIn.get(remove);
+			} else if (mstIn.get(remove) == currentV) {
+				sol.add(currentV);
+				unvisitedV.set(currentV,-1);
+				currentV = mst.get(remove);
+
+			}
+		}
+		sol.add(0);
+		
+
+		
+		int[] solution = new int[cities.length +1];
+		for(int i = 0;i<cities.length+1;i++)
+			solution[i] = sol.get(i); 
+		
+		totalDuration = 0;
+		for(int k = 0; k < solution.length -1; k++) {
+			totalDuration += getFIFOTravellingTime(solution[k],solution[k + 1],totalDuration);
+		}
+		LocalTime timeEnd = LocalTime.now();
+		
+		for(int i = 0;i < solution.length;i++)
+			solution[i] = cities[solution[i]];
+		System.out.println(Arrays.toString(solution) + " objective value: "+ totalDuration);
+
+		float computingTime = Duration.between(timeStart,timeEnd).toNanos()/1000;
+		saveInCSV(fileName,"Christofides algorithm",totalDuration,solution,(int)computingTime);
+	}
+*/

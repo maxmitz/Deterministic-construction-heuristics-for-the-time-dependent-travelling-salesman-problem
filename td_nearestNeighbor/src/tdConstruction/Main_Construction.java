@@ -7,17 +7,20 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Main_Construction {
 	
 	static int nbLocations = 0;
 	static int nbTimeSteps = 0;
-	static int durationTimeStep = 0;
+	static double durationTimeStep = 0;
 	static double[][][] distanceFct = null;
 	static String fileName;
 	static Scanner file;
@@ -30,14 +33,13 @@ public class Main_Construction {
 	static int[] bestResultPath;
 	static int step;
 	static boolean duplicate;
-	static double[][] distanceFctTimeIndependent;
 	
 	static double bestDuration = 999999;
 	static String[] stringListOfFiles;
 	static int counter;
 	static boolean isCordeau = false;
 	static int[] serviceTime;
-	public static double[][] distanceFctTimeindependent;
+	public static double[][] distanceFctTimeIndependent;
 	
 	static List<Integer> mst;
 	static List<Integer> mstIn;
@@ -48,7 +50,8 @@ public class Main_Construction {
 
 	
 	public static void main(String[]args) throws FileNotFoundException {
-		/*
+		
+		
 		// Cordeau
 		isCordeau = true;
 		int[] numbersCordeau = {15,20,25,30,35,40};
@@ -65,6 +68,7 @@ public class Main_Construction {
 			}
 		}
 		
+		
 		stringListOfFiles = new String[1];
 		stringListOfFiles[0] = "15\\15ANodi_1";
 		for (String name :stringListOfFiles) {
@@ -75,7 +79,7 @@ public class Main_Construction {
 			distanceFct = dataReading.getDistanceFctCordeau();
 			nbLocations = dataReading.getnbLocations();
 			nbTimeSteps = dataReading.getnbTimeSteps();
-			durationTimeStep = dataReading.getdurationTimeStep();
+			durationTimeStep = dataReading.getdurationTimeStepCordeau();
 			setFIFODistanceFct();	
 			
 			// General TD-TSP
@@ -114,11 +118,11 @@ public class Main_Construction {
 			doNearestNeighbor();
 			doNearestInsertion();
 			doSavingsAlgo();
-			//doChristofidesAlgorithm();
+			doChristofidesAlgorithm();
 		}
 		isCordeau = false;
-		*/
 		
+		/*
 		// Melgarejo
 		String fileNameBenchmark = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileNameBenchmark);
@@ -146,8 +150,8 @@ public class Main_Construction {
 		}
 		counter=0;
 		
-		//stringListOfFiles = new String[1];
-		//stringListOfFiles[0] = "10\\inst_10_13.txt";
+		stringListOfFiles = new String[1];
+		stringListOfFiles[0] = "10\\inst_10_1.txt";
 		
 		for(String fileNamet : stringListOfFiles) {
 			fileName = fileNamet;
@@ -205,7 +209,7 @@ public class Main_Construction {
 			//System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
-		
+		*/
 		
 		/*
 		// Rifki
@@ -615,33 +619,17 @@ public class Main_Construction {
 		
 	}
 	
+	
+	
+	
 	static void doChristofidesAlgorithm() {
 		System.out.println("Christofides Algorithm");
 		LocalTime timeStart = LocalTime.now();
 
 		// transform matrix
-		distanceFctTimeindependent = new double[nbLocations][nbLocations];
+		distanceFctTimeIndependent = new double[nbLocations][nbLocations];
 		
-		// Get average
-		/*
-		for(int i = 0;i<nbLocations;i++) {
-			for(int j = 0;j<nbLocations;j++) {
-				for(int t = 0;t<nbTimeSteps;t++) {
-					distanceFctTimeindependent[i][j] += distanceFct[i][j][t];
-				}
-				distanceFctTimeindependent[i][j] = distanceFctTimeindependent[i][j] / nbTimeSteps;
-			}
-		}
-		
-		for(int i = 0;i<nbLocations;i++) {
-			for(int j = 0;j<nbLocations;j++) {
-				if(i != j) {
-					distanceFctTimeindependent[i][j] = (distanceFctTimeindependent[i][j] + distanceFctTimeindependent[j][i]) /2;
-					distanceFctTimeindependent[j][i] = distanceFctTimeindependent[i][j];
-				}
-			}
-		}
-		*/
+
 		// Get median for distanceFct
 		
 		for(int i = 0;i<nbLocations;i++) {
@@ -652,131 +640,31 @@ public class Main_Construction {
 					listMedian[t+nbTimeSteps] = distanceFct[j][i][t];
 				}
 				Arrays.sort(listMedian);
-				distanceFctTimeindependent[i][j] = (listMedian[nbTimeSteps] + listMedian[nbTimeSteps+1])/2;
+				distanceFctTimeIndependent[i][j] = (listMedian[nbTimeSteps] + listMedian[nbTimeSteps+1])/2;
 			}
 		}
 		
-		// calculate minimum spanning tree (Kruskal)
-		mst = new LinkedList<>();
-		mstIn = new LinkedList<>();
-		
-		for(int k = 0;k<cities.length -1;k++) {
-			double compare = 999999;
-			int bestI = -2;
-			int bestJ = -2;
-			for(int i = 0;i<cities.length;i++) {
-				for(int j = 0;j<cities.length;j++) {
-					if(distanceFctTimeindependent[cities[i]][cities[j]] < compare && i !=j) {
-						
-						Graph graph = new Graph(cities.length);
-					    for(int m = 0; m<mst.size();m++) {
-					    	graph.addEdge(mstIn.get(m), mst.get(m));
-					    }
-					    graph.addEdge(i, j);
-						
-						if(!graph.isCyclic()){
-							compare = distanceFctTimeindependent[cities[i]][cities[j]];
-							bestI = i;
-							bestJ = j;
+			
+	      Christofides ch = null;
+	      try{
+	              ch = new Christofides(true);
+	      }
+	      catch(Exception e){
+	              e.printStackTrace();
+	              System.exit(0);
+	      }
+	
+	      
+          int [] shortestPath = ch.solve(distanceFctTimeIndependent);
+ 
+          System.out.println("Shortest path: "+Arrays.toString(shortestPath));
 
-						}
-					}
-				}
-			}
-			mst.add(bestJ); 
-			mstIn.add(bestI);
-		}
-		
-		// !!!Needs to be done!!!
-		bestDuration = 999999;
-		//doPerfectMatchingPermutation();
-		List<Integer> needMatching = new LinkedList<>();
-		counter = 0;
-		for(int i = 0;i<=mst.size();i++) {
-			int helpCounter = 0;
-			for(int j = 0;j<mst.size();j++) {
-				if(i == mst.get(j)) 
-					helpCounter++;
-				if(i == mstIn.get(j)) 
-					helpCounter++;
-			}
-			if(helpCounter%2 == 1) {
-				counter++;
-				needMatching.add(i);
-			}
-		}
-		
-    	bestMatching = new int[needMatching.size()];
-		permuteMatching(needMatching,0);
-		for(int i = 0;i<bestMatching.length -1;i+=2) {
-			mst.add(bestMatching[i]);
-			mstIn.add(bestMatching[i+1]);
+	         
 
-		}
-						
-		List<Integer> unvisitedV = new LinkedList<>();
-		List<Integer> sol = new LinkedList<>();
-		
-		for(int i = 0; i<cities.length;i++) {
-			unvisitedV.add(i);
-		}
-		
-		int currentV = 0;
-		
-		for(int j = 0;j < cities.length;j++) {
-			int remove = -1;
-			counter = 0;
-			for(int i = 0; i < mst.size();i++) {
-				if(mst.get(i) == currentV) {
-					for(int unv: unvisitedV) {
-						if (unv == mstIn.get(i)) {
-							remove = i;
-
-						}
-					}
-				}
-				if(mstIn.get(i) == currentV) {
-					for(int unv: unvisitedV) {
-						if (unv == mst.get(i)) {
-							remove = i;
-
-						}
-					}
-				}
-			}
-			if(remove == -1) {
-				int compare = 999999;
-				int bestV = -1;
-				for(int unv:unvisitedV) {
-					if(unv != -1) {
-						if (distanceFctTimeindependent[cities[currentV]][cities[unv]] < compare) {
-							bestV = unv;
-						}
-					}
-				}
-				sol.add(currentV);
-				unvisitedV.set(currentV, -1);
-				currentV = bestV;
-				
-				
-			} else if(mst.get(remove) == currentV) {
-				sol.add(currentV);
-				unvisitedV.set(currentV, -1);
-				currentV = mstIn.get(remove);
-			} else if (mstIn.get(remove) == currentV) {
-				sol.add(currentV);
-				unvisitedV.set(currentV,-1);
-				currentV = mst.get(remove);
-
-			}
-		}
-		sol.add(0);
-		
-		
 		
 		int[] solution = new int[cities.length +1];
 		for(int i = 0;i<cities.length+1;i++)
-			solution[i] = sol.get(i); 
+			solution[i] = shortestPath[i]; 
 		
 		totalDuration = 0;
 		for(int k = 0; k < solution.length -1; k++) {
@@ -801,7 +689,7 @@ public class Main_Construction {
         if (k == arr.size() -1){
     		double totalDuration = 0;
     		for(int j = 0; j < arr.size() -1; j+= 2) {
-    			totalDuration += distanceFctTimeindependent[arr.get(j)][arr.get(j+1)];
+    			totalDuration += distanceFctTimeIndependent[arr.get(j)][arr.get(j+1)];
     		} 
     		
     		if(totalDuration < bestDuration) {
@@ -895,6 +783,8 @@ public class Main_Construction {
 
 		}
 	}
-}
+
+
+ }
 
 
