@@ -51,7 +51,7 @@ public class Main_Construction {
 	
 	public static void main(String[]args) throws FileNotFoundException {
 		
-		
+		/*
 		// Cordeau
 		isCordeau = true;
 		int[] numbersCordeau = {15,20,25,30,35,40};
@@ -121,6 +121,8 @@ public class Main_Construction {
 			doChristofidesAlgorithm();
 		}
 		isCordeau = false;
+		*/
+		
 		
 		/*
 		// Melgarejo
@@ -211,7 +213,7 @@ public class Main_Construction {
 		}
 		*/
 		
-		/*
+		
 		// Rifki
 		System.out.println("Rifki Benchmark");
 		String folderName = "C:\\\\Users\\\\m-zim\\\\Desktop\\\\Masterarbeit\\\\Benchmarks\\\\TDTSPBenchmark_Rifki";
@@ -256,7 +258,7 @@ public class Main_Construction {
 			doChristofidesAlgorithm();
 		}
 		
-		*/
+		
 		// Normal TSP
 		/*
 		folderName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TSPBenchmarks";
@@ -627,17 +629,17 @@ public class Main_Construction {
 		LocalTime timeStart = LocalTime.now();
 
 		// transform matrix
-		distanceFctTimeIndependent = new double[nbLocations][nbLocations];
+		distanceFctTimeIndependent = new double[cities.length][cities.length];
 		
 
 		// Get median for distanceFct
 		
-		for(int i = 0;i<nbLocations;i++) {
-			for(int j = 0;j<nbLocations;j++) {
+		for(int i = 0;i<cities.length;i++) {
+			for(int j = 0;j<cities.length;j++) {
 				double[] listMedian = new double[nbTimeSteps*2];
 				for(int t = 0;t<nbTimeSteps;t++) {
-					listMedian[t] = distanceFct[i][j][t];
-					listMedian[t+nbTimeSteps] = distanceFct[j][i][t];
+					listMedian[t] = distanceFct[cities[i]][cities[j]][t];
+					listMedian[t+nbTimeSteps] = distanceFct[cities[j]][cities[i]][t];
 				}
 				Arrays.sort(listMedian);
 				distanceFctTimeIndependent[i][j] = (listMedian[nbTimeSteps] + listMedian[nbTimeSteps+1])/2;
@@ -645,26 +647,22 @@ public class Main_Construction {
 		}
 		
 			
-	      Christofides ch = null;
-	      try{
-	              ch = new Christofides(true);
-	      }
-	      catch(Exception e){
-	              e.printStackTrace();
-	              System.exit(0);
-	      }
+	    Christofides ch = null;
+	    try{
+	    	ch = new Christofides(true);
+	    }
+	    catch(Exception e){
+		    e.printStackTrace();
+		    System.exit(0);
+	    }
 	
 	      
-          int [] shortestPath = ch.solve(distanceFctTimeIndependent);
- 
-          System.out.println("Shortest path: "+Arrays.toString(shortestPath));
-
-	         
-
+        int [] shortestPath = ch.solve(distanceFctTimeIndependent);          
 		
 		int[] solution = new int[cities.length +1];
-		for(int i = 0;i<cities.length+1;i++)
+		for(int i = 0;i<cities.length;i++)
 			solution[i] = shortestPath[i]; 
+		solution[cities.length] = 0;
 		
 		totalDuration = 0;
 		for(int k = 0; k < solution.length -1; k++) {
