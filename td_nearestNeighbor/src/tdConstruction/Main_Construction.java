@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -124,7 +125,7 @@ public class Main_Construction {
 		*/
 		
 		
-		/*
+		
 		// Melgarejo
 		String fileNameBenchmark = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
 		DataReading dataReading = new DataReading(fileNameBenchmark);
@@ -152,8 +153,8 @@ public class Main_Construction {
 		}
 		counter=0;
 		
-		stringListOfFiles = new String[1];
-		stringListOfFiles[0] = "10\\inst_10_1.txt";
+		//stringListOfFiles = new String[1];
+		//stringListOfFiles[0] = "10\\inst_10_1.txt";
 		
 		for(String fileNamet : stringListOfFiles) {
 			fileName = fileNamet;
@@ -211,9 +212,9 @@ public class Main_Construction {
 			//System.out.println("total duration with FIFO: " + tTotalDuration);
 
 		}
-		*/
 		
 		
+		/*
 		// Rifki
 		System.out.println("Rifki Benchmark");
 		String folderName = "C:\\\\Users\\\\m-zim\\\\Desktop\\\\Masterarbeit\\\\Benchmarks\\\\TDTSPBenchmark_Rifki";
@@ -257,7 +258,7 @@ public class Main_Construction {
 			doSavingsAlgo();
 			doChristofidesAlgorithm();
 		}
-		
+		*/
 		
 		// Normal TSP
 		/*

@@ -169,7 +169,7 @@ public class DataReading {
 				for(int j=0;j<nbLocations;j++) {
 					for(int s=0;s<this.nbTimeSteps;s++) {
 						distanceFct[i][j][s]=file.nextInt();
-						if(j!= 0) {
+						if(i!= 0 && j!= 0) {
 							distanceFct[i][j][s] += 180;
 						}
 					}
