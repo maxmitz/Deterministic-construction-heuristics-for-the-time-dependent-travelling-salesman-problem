@@ -56,7 +56,7 @@ public class Main_Construction {
 		stringListOfFiles = new String[6*30];
 		for(int j=0;j<numbersCordeau.length;j++) {
 			// 
-			File folder = new File("C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\"+Integer.toString(numbersCordeau[j]));
+			File folder = new File("!!!Folder!!!"+Integer.toString(numbersCordeau[j]));
 			File[] listOfFiles = folder.listFiles();
 			for (int i = 0; i < listOfFiles.length; i++) {
 			  if (listOfFiles[i].isFile()) {
@@ -72,7 +72,7 @@ public class Main_Construction {
 		for (String name :stringListOfFiles) {
 			System.out.println("\n"+name);
 			// Has to changed to location of Cordeau benchmark
-			fileName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Cordeau\\"+name;
+			fileName = "!!Folder!!"+name;
 			DataReading dataReading = new DataReading(fileName);
 			fileName = name;
 			distanceFct = dataReading.getDistanceFctCordeau();
@@ -104,7 +104,7 @@ public class Main_Construction {
 		// Melgarejo
 		
 		// Has to be changed to matrix file
-		String fileNameBenchmark = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Matrices\\matrix00.txt";				
+		String fileNameBenchmark = "!!!Matrix location!!!";				
 		DataReading dataReading = new DataReading(fileNameBenchmark);
 		distanceFct = dataReading.getDistanceFctMelgarejo();
 		nbLocations = dataReading.getnbLocations();
@@ -118,7 +118,7 @@ public class Main_Construction {
 		stringListOfFiles = new String[220];
 		
 		// Has to be changed to instance location without time windows
-		String folderName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Melgarejo\\Instances\\Instances_noTW\\";
+		String folderName = "!!!FOLDERLOCATION!!!";
 		
 		for(int j=0;j<numbersMelgarejo.length;j++) {
 			File folder = new File(folderName+Integer.toString(numbersMelgarejo[j]));
@@ -174,7 +174,7 @@ public class Main_Construction {
 		
 		// Rifki
 		System.out.println("Rifki Benchmark");
-		folderName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TDTSPBenchmark_Rifki";
+		folderName = "!!!Folder location!!!";
 		File folder = new File(folderName);
 		File[] listOfFiles = folder.listFiles();
 		stringListOfFiles = new String[listOfFiles.length];
@@ -222,7 +222,7 @@ public class Main_Construction {
 		// Normal TSP
 		
 		//Location has to be changed
-		folderName = "C:\\Users\\m-zim\\Desktop\\Masterarbeit\\Benchmarks\\TSPBenchmarks";
+		folderName = "!!LOCATOIN!!";
 		folder = new File(folderName);
 		listOfFiles = folder.listFiles();
 		stringListOfFiles = new String[listOfFiles.length];
